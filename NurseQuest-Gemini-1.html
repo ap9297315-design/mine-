@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NurseQuest — VII Semester (Gemini 3.8 Fixed)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10141F">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NurseQuest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#10141F;
+  --panel:#1A2036;
+  --panel-raised:#232B47;
+  --panel-line:#2E3656;
+  --amber:#F2A65A;
+  --amber-dim:#8a6a3c;
+  --teal:#4FD1C5;
+  --text:#EDEAE3;
+  --text-muted:#9098B1;
+  --success:#7FCB8C;
+  --danger:#E8697A;
+  --radius:16px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--ink);color:var(--text);font-family:'Work Sans',sans-serif;height:100%;overflow:hidden;}
+h1,h2,h3,.serif{font-family:'Lora',serif;}
+button{font-family:inherit;}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--ink);}
+
+/* ---------- Vitals header ---------- */
+.vitals{
+  position:relative;
+  padding:14px 18px 12px;
+  border-bottom:1px solid var(--panel-line);
+  background:linear-gradient(180deg,#141A2C 0%, var(--ink) 100%);
+  flex-shrink:0;
+}
+.vitals-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.brand{display:flex;align-items:center;gap:8px;}
+.brand-mark{width:28px;height:28px;flex-shrink:0;}
+.brand-name{font-size:17px;font-weight:600;letter-spacing:0.2px;}
+.vitals-stats{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text-muted);}
+.vstat{display:flex;align-items:center;gap:5px;}
+.vstat b{color:var(--text);font-weight:600;}
+.vstat .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.vstat.streak .dot{background:var(--danger);}
+.ecg-strip{width:100%;height:22px;margin-top:8px;overflow:hidden;}
+.ecg-strip svg{width:200%;height:100%;animation:ecgmove 6s linear infinite;}
+@keyframes ecgmove{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+.xpbar-track{margin-top:8px;height:5px;border-radius:3px;background:var(--panel-line);overflow:hidden;}
+.xpbar-fill{height:100%;background:linear-gradient(90deg,var(--amber-dim),var(--amber));border-radius:3px;transition:width .5s ease;}
+
+/* ---------- Screens ---------- */
+.screens{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px 90px;}
+.screen{display:none;animation:fadein .25s ease;}
+.screen.active{display:block;}
+@keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+.hero-line{color:var(--text-muted); font-size:14px; margin:2px 0 18px; max-width:34ch;}
+.section-title{font-size:13px; text-transform:none; color:var(--text-muted); margin:22px 0 10px; display:flex; align-items:center; justify-content:space-between;}
+.section-title a{color:var(--teal); font-size:13px; text-decoration:none;}
+
+/* subject cards */
+.subject-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.subject-card{
+  background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius);
+  padding:14px; cursor:pointer; position:relative; overflow:hidden; min-height:118px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  transition:transform .15s ease, border-color .15s ease;
+}
+.subject-card:active{transform:scale(0.97);}
+.subject-card .ring{position:absolute; top:10px; right:10px;}
+.subject-card .sname{font-family:'Lora',serif; font-weight:600; font-size:14.5px; line-height:1.25; padding-right:40px;}
+.subject-card .smeta{font-size:11.5px; color:var(--text-muted);}
+.subject-card .sbar-track{height:4px;background:var(--panel-line);border-radius:2px;margin-top:8px;overflow:hidden;}
+.subject-card .sbar-fill{height:100%;border-radius:2px;}
+
+.continue-card{
+  background:var(--panel-raised); border:1px solid var(--panel-line); border-radius:var(--radius);
+  padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;
+}
+.continue-card .cc-label{font-size:11.5px; color:var(--text-muted); margin-bottom:3px;}
+.continue-card .cc-topic{font-size:14px; font-weight:600;}
+.continue-card .cc-arrow{color:var(--amber); font-size:20px; flex-shrink:0;}
+
+/* topic list */
+.unit-block{margin-bottom:18px;}
+.unit-head{font-size:12.5px; color:var(--amber); letter-spacing:0.4px; margin-bottom:8px; font-weight:600;}
+.topic-row{
+  display:flex; align-items:center; gap:10px; padding:12px 12px; background:var(--panel);
+  border:1px solid var(--panel-line); border-radius:12px; margin-bottom:7px; cursor:pointer;
+}
+.topic-row .tcheck{width:18px;height:18px;border-radius:50%;border:2px solid var(--panel-line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.topic-row.done .tcheck{background:var(--success);border-color:var(--success);color:#0c1a0f;}
+.topic-row .ttext{font-size:13.5px; line-height:1.35;}
+
+.backbar{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+.backbtn{background:var(--panel); border:1px solid var(--panel-line); color:var(--text); width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer; flex-shrink:0;}
+.backbar h2{font-size:17px; margin:0;}
+.backbar .sub{font-size:12px;color:var(--text-muted);}
+
+/* topic detail */
+.topic-detail-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); padding:16px;}
+.topic-detail-card h3{margin:0 0 4px; font-size:16px;}
+.topic-detail-card .unit-tag{font-size:11px;color:var(--amber);}
+.explain-box{margin-top:14px; font-size:14px; line-height:1.65; white-space:pre-wrap;}
+.explain-placeholder{margin-top:14px; padding:20px 14px; text-align:center; color:var(--text-muted); font-size:13px; border:1px dashed var(--panel-line); border-radius:12px;}
+.btn{
+  background:var(--amber); color:#20140a; border:none; border-radius:12px; padding:12px 16px;
+  font-weight:600; font-size:14px; cursor:pointer; width:100%; margin-top:12px;
+}
+.btn.secondary{background:var(--panel-raised); color:var(--text); border:1px solid var(--panel-line);}
+.btn:disabled{opacity:0.5;}
+.btn-row{display:flex; gap:8px;}
+.btn-row .btn{margin-top:0;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#20140a;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* quiz */
+.quiz-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); padding:18px;}
+.quiz-progress{font-size:12px;color:var(--text-muted); margin-bottom:10px;}
+.quiz-q{font-size:15.5px; line-height:1.5; margin-bottom:16px; font-weight:500;}
+.opt{
+  display:block; width:100%; text-align:left; background:var(--panel-raised); border:1px solid var(--panel-line);
+  color:var(--text); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:13.8px; cursor:pointer;
+}
+.opt.correct{border-color:var(--success); background:rgba(127,203,140,0.14);}
+.opt.wrong{border-color:var(--danger); background:rgba(232,105,122,0.14);}
+.opt:disabled{cursor:default;}
+.quiz-explain{margin-top:10px; padding:12px; background:var(--panel-raised); border-radius:12px; font-size:13px; color:var(--text-muted); line-height:1.5;}
+.quiz-score{text-align:center; padding:30px 10px;}
+.quiz-score .big{font-family:'Lora',serif; font-size:40px; font-weight:700; color:var(--amber);}
+
+/* AI chat */
+.chat-wrap{display:flex; flex-direction:column; height:100%;}
+.chat-log{flex:1; overflow-y:auto; padding-bottom:8px;}
+.msg{max-width:85%; padding:10px 13px; border-radius:14px; margin-bottom:8px; font-size:13.8px; line-height:1.5; white-space:pre-wrap;}
+.msg.user{background:var(--amber); color:#20140a; margin-left:auto; border-bottom-right-radius:4px;}
+.msg.ai{background:var(--panel); border:1px solid var(--panel-line); margin-right:auto; border-bottom-left-radius:4px;}
+.chat-input-row{display:flex; gap:8px; padding-top:8px; border-top:1px solid var(--panel-line);}
+.chat-input-row input{flex:1; background:var(--panel); border:1px solid var(--panel-line); color:var(--text); border-radius:12px; padding:11px 13px; font-size:14px;}
+.chat-input-row button{background:var(--amber); color:#20140a; border:none; border-radius:12px; width:44px; font-size:16px; cursor:pointer;}
+.chip-row{display:flex; gap:6px; overflow-x:auto; padding:2px 0 10px;}
+.chip{flex-shrink:0; background:var(--panel-raised); border:1px solid var(--panel-line); color:var(--text-muted); border-radius:20px; padding:6px 12px; font-size:12px; cursor:pointer; white-space:nowrap;}
+
+/* profile / settings */
+.stat-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px;}
+.stat-box{background:var(--panel); border:1px solid var(--panel-line); border-radius:12px; padding:12px 8px; text-align:center;}
+.stat-box .num{font-family:'Lora',serif; font-size:20px; font-weight:700; color:var(--amber);}
+.stat-box .lbl{font-size:10.5px; color:var(--text-muted); margin-top:2px;}
+.field-label{font-size:12.5px; color:var(--text-muted); margin:16px 0 6px;}
+.field-input{width:100%; background:var(--panel); border:1px solid var(--panel-line); color:var(--text); border-radius:10px; padding:11px 13px; font-size:13.5px;}
+.theme-row{display:flex; gap:8px; margin-top:6px;}
+.theme-swatch{width:40px;height:40px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.theme-swatch.active{border-color:var(--text);}
+.badge-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;}
+.badge{background:var(--panel); border:1px solid var(--panel-line); border-radius:10px; padding:8px 10px; font-size:11px; text-align:center; width:64px;}
+.badge.locked{opacity:0.35;}
+.badge .bic{font-size:20px;}
+
+/* bottom nav */
+.navbar{
+  position:absolute; bottom:0; left:0; right:0; max-width:560px; margin:0 auto;
+  display:flex; background:var(--panel); border-top:1px solid var(--panel-line);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+}
+.navbtn{flex:1; background:none; border:none; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; padding:6px 2px; cursor:pointer;}
+.navbtn.active{color:var(--amber);}
+.navbtn svg{width:20px;height:20px;}
+
+/* toast */
+#toast{position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--panel-raised); border:1px solid var(--panel-line); padding:10px 16px; border-radius:20px; font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:50; white-space:nowrap;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+
+::-webkit-scrollbar{width:0;height:0;}
+
+/* ---------- exam sheets ---------- */
+.tabbar{display:flex; gap:6px; margin-bottom:16px; background:var(--panel); border:1px solid var(--panel-line); border-radius:12px; padding:4px;}
+.tabbtn{flex:1; background:none; border:none; color:var(--text-muted); padding:9px 4px; border-radius:9px; font-size:13px; cursor:pointer; font-weight:500;}
+.tabbtn.active{background:var(--panel-raised); color:var(--text);}
+.upload-card{background:var(--panel); border:1px dashed var(--panel-line); border-radius:var(--radius); padding:18px; margin-bottom:14px;}
+.upload-card h3{margin:0 0 4px; font-size:14.5px;}
+.upload-card p{margin:0 0 12px; font-size:12.5px; color:var(--text-muted); line-height:1.5;}
+.upload-choice-row{display:flex; gap:8px; flex-wrap:wrap;}
+.upload-choice{flex:1; min-width:100px; background:var(--panel-raised); border:1px solid var(--panel-line); border-radius:10px; padding:10px 8px; text-align:center; font-size:12px; cursor:pointer;}
+.upload-choice .uic{font-size:20px; display:block; margin-bottom:4px;}
+input[type=file]{display:none;}
+textarea.field-input{min-height:90px; resize:vertical; font-family:inherit;}
+.sheet-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:12px; padding:13px 14px; margin-bottom:9px; cursor:pointer;}
+.sheet-card .sc-name{font-size:14px; font-weight:600;}
+.sheet-card .sc-meta{font-size:11.5px; color:var(--text-muted); margin-top:2px;}
+.qa-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); padding:15px; margin-bottom:12px;}
+.qa-card .qa-q{font-weight:600; font-size:14px; margin-bottom:8px; line-height:1.4;}
+.qa-card .qa-a{font-size:13.5px; line-height:1.65; white-space:pre-wrap; color:var(--text);}
+.flowchart{margin-top:12px; display:flex; flex-direction:column; align-items:center;}
+.flow-box{width:100%; background:var(--panel-raised); border:1px solid var(--teal); border-radius:10px; padding:9px 12px; font-size:12.5px; line-height:1.4; text-align:center;}
+.flow-arrow{color:var(--teal); font-size:16px; line-height:1; margin:2px 0;}
+.empty-state{text-align:center; padding:36px 16px; color:var(--text-muted); font-size:13px;}
+
+/* ---------- clinical simulation ---------- */
+.sim-scene{background:radial-gradient(ellipse at top, #1c2340 0%, var(--panel) 70%); border:1px solid var(--panel-line); border-radius:var(--radius); padding:20px 16px; text-align:center; margin-bottom:14px;}
+.sim-scene .scene-icon{font-size:44px; line-height:1;}
+.sim-scene .scene-setting{font-size:11px; color:var(--text-muted); letter-spacing:0.5px; margin-top:6px;}
+.vitals-monitor{display:flex; justify-content:center; gap:16px; margin-top:12px;}
+.vmon{text-align:center;}
+.vmon .vval{font-family:'Lora',serif; font-size:18px; font-weight:700;}
+.vmon .vlbl{font-size:9.5px; color:var(--text-muted); letter-spacing:0.4px;}
+.vmon.ok .vval{color:var(--success);}
+.vmon.warn .vval{color:var(--danger);}
+.status-track{height:6px; border-radius:3px; background:var(--panel-line); margin-top:10px; overflow:hidden;}
+.status-fill{height:100%; border-radius:3px; transition:width .4s ease, background .4s ease;}
+.sim-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); padding:16px;}
+.sim-step-tag{font-size:11.5px; color:var(--teal); margin-bottom:8px;}
+.sim-scenario-card{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); padding:14px; margin-bottom:10px; display:flex; gap:12px; align-items:center; cursor:pointer;}
+.sim-scenario-card .ssc-icon{font-size:28px; flex-shrink:0;}
+.sim-scenario-card .ssc-title{font-weight:600; font-size:14px;}
+.sim-scenario-card .ssc-sub{font-size:11.5px; color:var(--text-muted); margin-top:2px;}
+.sim-outcome{text-align:center; padding:20px 10px;}
+.sim-outcome .so-icon{font-size:48px;}
+.sim-outcome .so-title{font-family:'Lora',serif; font-size:19px; font-weight:700; margin:8px 0 4px;}
+
+/* ---------- presentation maker ---------- */
+.unit-select-row{display:flex; gap:6px; overflow-x:auto; padding:2px 0 4px;}
+.unit-chip{flex-shrink:0; background:var(--panel); border:1px solid var(--panel-line); color:var(--text-muted); border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; white-space:nowrap;}
+.unit-chip.active{background:var(--amber); color:#20140a; border-color:var(--amber);}
+.slide-viewer{background:#0B0E17; border:1px solid var(--panel-line); border-radius:var(--radius); aspect-ratio:16/9; display:flex; flex-direction:column; justify-content:center; padding:22px 24px; position:relative; overflow:hidden;}
+.slide-viewer .slide-heading{font-family:'Lora',serif; font-size:19px; font-weight:700; color:var(--amber); margin-bottom:14px;}
+.slide-viewer ul{margin:0; padding-left:18px; font-size:13px; line-height:1.6; color:var(--text);}
+.slide-viewer .slide-num{position:absolute; bottom:10px; right:14px; font-size:10px; color:var(--text-muted);}
+.slide-nav{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;}
+.slide-nav button{background:var(--panel-raised); border:1px solid var(--panel-line); color:var(--text); border-radius:10px; width:42px; height:38px; font-size:16px; cursor:pointer;}
+.slide-dots{display:flex; gap:5px; flex-wrap:wrap; justify-content:center;}
+.slide-dot{width:6px; height:6px; border-radius:50%; background:var(--panel-line);}
+.slide-dot.active{background:var(--amber);}
+#fullscreenSlideOverlay{position:fixed; inset:0; background:#0B0E17; z-index:100; display:none; flex-direction:column; justify-content:center; padding:8vw; align-items:center;}
+#fullscreenSlideOverlay.show{display:flex;}
+#fullscreenSlideOverlay .fs-heading{font-family:'Lora',serif; font-size:6vw; font-weight:700; color:var(--amber); margin-bottom:24px; text-align:center;}
+#fullscreenSlideOverlay ul{font-size:3.4vw; line-height:1.7; color:var(--text); max-width:900px;}
+#fullscreenSlideOverlay .fs-close{position:absolute; top:18px; right:22px; background:var(--panel); border:1px solid var(--panel-line); color:var(--text); width:38px;height:38px;border-radius:10px; font-size:16px; cursor:pointer;}
+#fullscreenSlideOverlay .fs-tap{position:absolute; inset:0; display:flex;}
+#fullscreenSlideOverlay .fs-tap div{flex:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="vitals">
+    <div class="vitals-row">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="var(--amber)" stroke-width="1.5"/><path d="M7 14h3l2-6 4 12 2-6h3" stroke="var(--teal)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <span class="brand-name">NurseQuest</span>
+      </div>
+      <div class="vitals-stats">
+        <div class="vstat"><span class="dot"></span><b id="hdrLevel">Lv 1</b></div>
+        <div class="vstat streak"><span class="dot"></span><b id="hdrStreak">0</b></div>
+      </div>
+    </div>
+    <div class="ecg-strip">
+      <svg viewBox="0 0 600 40" preserveAspectRatio="none"><path d="M0 20 L60 20 L75 20 L85 4 L95 36 L105 20 L160 20 L175 20 L185 4 L195 36 L205 20 L260 20 L275 20 L285 4 L295 36 L305 20 L360 20 L375 20 L385 4 L395 36 L405 20 L460 20 L475 20 L485 4 L495 36 L505 20 L560 20 L575 20 L585 4 L595 36 L600 20 M300 20 L360 20 L375 20 L385 4 L395 36 L405 20 L460 20 L475 20 L485 4 L495 36 L505 20 L560 20 L575 20 L585 4 L595 36 L605 20 L660 20 L675 20 L685 4 L695 36 L705 20 L760 20 L775 20 L785 4 L795 36 L805 20 L860 20 L875 20 L885 4 L895 36 L905 20 L960 20 L975 20 L985 4 L995 36 L1000 20 L1100 20" stroke="var(--teal)" stroke-width="1.6" fill="none" opacity="0.55"/></svg>
+    </div>
+    <div class="xpbar-track"><div class="xpbar-fill" id="xpbarFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="screens" id="screens">
+    <!-- HOME -->
+    <div class="screen active" id="screen-home"></div>
+    <!-- STUDY (subject list) -->
+    <div class="screen" id="screen-study"></div>
+    <!-- TOPICS (unit/topic list within a subject) -->
+    <div class="screen" id="screen-topics"></div>
+    <!-- TOPIC DETAIL -->
+    <div class="screen" id="screen-topicdetail"></div>
+    <!-- EXAM SHEETS -->
+    <div class="screen" id="screen-examsheets"></div>
+    <!-- EXAM SHEET DETAIL -->
+    <div class="screen" id="screen-examsheetdetail"></div>
+    <!-- CLINICAL SIMULATION HUB -->
+    <div class="screen" id="screen-simhub"></div>
+    <!-- CLINICAL SIMULATION SESSION -->
+    <div class="screen" id="screen-sim"></div>
+    <!-- PRESENTATION MAKER -->
+    <div class="screen" id="screen-pptmaker"></div>
+    <!-- PRESENTATION RESULT -->
+    <div class="screen" id="screen-pptresult"></div>
+    <!-- QUIZ HUB -->
+    <div class="screen" id="screen-quizhub"></div>
+    <!-- QUIZ SESSION -->
+    <div class="screen" id="screen-quiz"></div>
+    <!-- AI CHAT -->
+    <div class="screen" id="screen-ai"></div>
+    <!-- PROFILE -->
+    <div class="screen" id="screen-profile"></div>
+  </div>
+
+  <div class="navbar">
+    <button class="navbtn" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>Home</button>
+    <button class="navbtn" data-nav="study"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M4 5.5v16"/></svg>Study</button>
+    <button class="navbtn" data-nav="quizhub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.9.4-1.4 1-1.4 2"/><circle cx="12" cy="16.3" r="0.4" fill="currentColor"/></svg>Quiz</button>
+    <button class="navbtn" data-nav="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="12" rx="3"/><path d="M9 20l3-4 3 4"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/></svg>AI</button>
+    <button class="navbtn" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.5 4-5.5 7-5.5s5.8 2 7 5.5"/></svg>Me</button>
+  </div>
+
+  <div id="toast"></div>
+  <div id="fullscreenSlideOverlay">
+    <button class="fs-close" onclick="closeFullscreenSlides()">✕</button>
+    <div class="fs-heading" id="fsHeading"></div>
+    <div id="fsBullets"></div>
+    <div class="fs-tap"><div onclick="fsPrev()"></div><div onclick="fsNext()"></div></div>
+  </div>
+</div>
+
+<script id="syllabus-data" type="application/json">{"Child Health Nursing II": [{"unit": "I", "topic": "Identification and nursing management of congenital malformations (cardiovascular system)"}, {"unit": "I", "topic": "Congenital heart diseases - cyanotic and acyanotic (ASD, VSD, PDA, TOF)"}, {"unit": "I", "topic": "Rheumatic fever and rheumatic heart disease"}, {"unit": "I", "topic": "Congestive cardiac failure"}, {"unit": "I", "topic": "Congenital hematological conditions - Hemophilia, Thalassemia"}, {"unit": "I", "topic": "Other hematological conditions - Anemia, Leukemia, Idiopathic thrombocytopenic purpura, Hodgkin's and non-Hodgkin's lymphoma"}, {"unit": "I", "topic": "Identification and nursing management of congenital malformations (gastro-intestinal system)"}, {"unit": "I", "topic": "Congenital GI conditions - cleft lip, cleft palate, congenital hypertrophic pyloric stenosis, Hirschsprung's disease (megacolon), anorectal malformation, malabsorption syndrome, abdominal wall defects, hernia"}, {"unit": "I", "topic": "Other GI conditions - gastroenteritis, diarrhea, vomiting, protein energy malnutrition, intestinal obstruction, hepatic diseases, intestinal parasites"}, {"unit": "I", "topic": "Identification and nursing management of congenital malformations (genitourinary system)"}, {"unit": "I", "topic": "Congenital genitourinary conditions - Wilms tumor, extrophy of bladder, hypospadias, epispadias, obstructive uropathy"}, {"unit": "I", "topic": "Other genitourinary conditions - nephrotic syndrome, acute glomerulonephritis, renal failure"}, {"unit": "I", "topic": "Identification and nursing management of congenital malformations (nervous system)"}, {"unit": "I", "topic": "Congenital nervous system conditions - Spina bifida, hydrocephalus"}, {"unit": "I", "topic": "Other nervous system conditions - meningitis, encephalitis, convulsive disorders (convulsions and seizures), cerebral palsy, head injury"}, {"unit": "II", "topic": "Club foot"}, {"unit": "II", "topic": "Hip dislocation"}, {"unit": "II", "topic": "Fracture"}, {"unit": "II", "topic": "Refractory errors"}, {"unit": "II", "topic": "Otitis media"}, {"unit": "II", "topic": "Atopic dermatitis"}, {"unit": "II", "topic": "Tuberculosis"}, {"unit": "II", "topic": "Diphtheria"}, {"unit": "II", "topic": "Tetanus"}, {"unit": "II", "topic": "Pertussis"}, {"unit": "II", "topic": "Poliomyelitis"}, {"unit": "II", "topic": "Measles"}, {"unit": "II", "topic": "Mumps"}, {"unit": "II", "topic": "Chickenpox"}, {"unit": "II", "topic": "HIV/AIDS"}, {"unit": "II", "topic": "Dengue fever"}, {"unit": "II", "topic": "COVID-19"}, {"unit": "III", "topic": "Child Guidance Clinic"}, {"unit": "III", "topic": "Enuresis and Encopresis"}, {"unit": "III", "topic": "Nervousness"}, {"unit": "III", "topic": "Nail biting"}, {"unit": "III", "topic": "Thumb sucking"}, {"unit": "III", "topic": "Temper tantrum"}, {"unit": "III", "topic": "Stealing"}, {"unit": "III", "topic": "Aggressiveness"}, {"unit": "III", "topic": "Juvenile delinquency"}, {"unit": "III", "topic": "School phobia"}, {"unit": "III", "topic": "Learning disability"}, {"unit": "III", "topic": "Childhood schizophrenia"}, {"unit": "III", "topic": "Childhood depression"}, {"unit": "III", "topic": "Conversion reaction"}, {"unit": "III", "topic": "Posttraumatic stress disorder"}, {"unit": "III", "topic": "Autistic spectrum disorders"}, {"unit": "III", "topic": "Obesity"}, {"unit": "III", "topic": "Anorexia nervosa"}, {"unit": "III", "topic": "Bulimia"}, {"unit": "III", "topic": "Management of mentally challenged children"}, {"unit": "III", "topic": "Management of physically challenged children"}, {"unit": "III", "topic": "Management of socially challenged children"}, {"unit": "III", "topic": "Child abuse"}, {"unit": "III", "topic": "Substance abuse"}, {"unit": "III", "topic": "Welfare services for challenged children in India"}], "Mental Health Nursing II": [{"unit": "I", "topic": "Prevalence and incidence of substance use disorders"}, {"unit": "I", "topic": "Commonly used psychotropic substances - classifications, forms, routes, action, intoxication and withdrawal"}, {"unit": "I", "topic": "Psychodynamics / etiology of substance use disorder (terminologies: Substance Use, Abuse, Tolerance, Dependence, Withdrawal)"}, {"unit": "I", "topic": "Diagnostic criteria / formulations (substance use disorders)"}, {"unit": "I", "topic": "Nursing assessment - history (substance history), physical, mental assessment and drug and drug assay"}, {"unit": "I", "topic": "Treatment (detoxification, antabuse and narcotic antagonist therapy and harm reduction, brief interventions, MET, refusal skills, maintenance therapy) and nursing management of patients with substance use disorders"}, {"unit": "I", "topic": "Special considerations for vulnerable population"}, {"unit": "I", "topic": "Follow-up, home care and rehabilitation (substance use disorders)"}, {"unit": "II", "topic": "Prevalence and incidence of personality and sexual disorders"}, {"unit": "II", "topic": "Classification of personality and sexual disorders"}, {"unit": "II", "topic": "Etiology, psychopathology, characteristics, diagnosis of personality and sexual disorders"}, {"unit": "II", "topic": "Nursing assessment - history, physical and mental health assessment (personality and sexual disorders)"}, {"unit": "II", "topic": "Treatment modalities and nursing management of patients with personality and sexual disorders"}, {"unit": "II", "topic": "Geriatric considerations (personality and sexual disorders)"}, {"unit": "II", "topic": "Follow-up, home care and rehabilitation (personality and sexual disorders)"}, {"unit": "III", "topic": "Nursing management of behavioural & emotional disorders occurring during childhood and adolescence (intellectual disability, autism, attention deficit hyperactive disorder, eating disorders, learning disorder)"}, {"unit": "III", "topic": "Prevalence and incidence of childhood and adolescent disorders"}, {"unit": "III", "topic": "Classifications of childhood and adolescent disorders"}, {"unit": "III", "topic": "Etiology, psychodynamics, characteristics, diagnostic criteria / formulations of childhood and adolescent disorders"}, {"unit": "III", "topic": "Nursing assessment - history, physical, mental status examination and IQ assessment"}, {"unit": "III", "topic": "Treatment modalities and nursing management of childhood disorders including intellectual disability"}, {"unit": "III", "topic": "Follow-up, home care and rehabilitation (childhood and adolescent disorders)"}, {"unit": "IV", "topic": "Nursing management of organic brain disorders (Delirium, Dementia, amnestic disorders)"}, {"unit": "IV", "topic": "Prevalence and incidence of organic brain disorders"}, {"unit": "IV", "topic": "Classification of organic brain disorders"}, {"unit": "IV", "topic": "Etiology, psychopathology, clinical features, diagnosis and differential diagnosis of organic brain disorders"}, {"unit": "IV", "topic": "Nursing assessment - history, physical, mental and neurological assessment"}, {"unit": "IV", "topic": "Treatment modalities and nursing management of organic brain disorders"}, {"unit": "IV", "topic": "Follow-up, home care and rehabilitation (organic brain disorders)"}, {"unit": "V", "topic": "Types of psychiatric emergencies (attempted suicide, violence/aggression, stupor, delirium tremens and other psychiatric emergencies) and their management"}, {"unit": "V", "topic": "Maladaptive behaviour of individual and groups, stress, crisis and disaster(s)"}, {"unit": "V", "topic": "Types of crisis"}, {"unit": "V", "topic": "Crisis intervention - principles, techniques and process"}, {"unit": "V", "topic": "Stress reduction interventions as per stress adaptation model"}, {"unit": "V", "topic": "Coping enhancement"}, {"unit": "V", "topic": "Techniques of counseling"}, {"unit": "VI", "topic": "Overview of Indian Lunacy Act and The Mental Health Act 1987"}, {"unit": "VI", "topic": "Protection of Children from Sexual Offence (POCSO) Act"}, {"unit": "VI", "topic": "Mental Health Care Act (MHCA) 2017"}, {"unit": "VI", "topic": "Rights of mentally ill clients"}, {"unit": "VI", "topic": "Forensic psychiatry and nursing"}, {"unit": "VI", "topic": "Acts related to narcotic and psychotropic substances and illegal drug trafficking"}, {"unit": "VI", "topic": "Admission and discharge procedures as per MHCA 2017"}, {"unit": "VI", "topic": "Role and responsibilities of nurses in implementing MHCA 2017"}, {"unit": "VII", "topic": "Development of Community Mental Health Services"}, {"unit": "VII", "topic": "National Mental Health Policy viz. National Health Policy"}, {"unit": "VII", "topic": "National Mental Health Program"}, {"unit": "VII", "topic": "Institutionalization versus Deinstitutionalization"}, {"unit": "VII", "topic": "Model of Preventive Psychiatry"}, {"unit": "VII", "topic": "Mental health services available at the primary, secondary, tertiary levels including rehabilitation and nurses' responsibilities"}, {"unit": "VII", "topic": "Mental Health Agencies - Government and voluntary, National and International"}, {"unit": "VII", "topic": "Mental health nursing issues for special populations - children, adolescence, women, elderly, victims of violence and abuse, handicapped, HIV/AIDS etc."}], "Community Health Nursing II": [{"unit": "I", "topic": "Standing orders: Definition, uses"}, {"unit": "I", "topic": "Abdominal pain"}, {"unit": "I", "topic": "Nausea and vomiting"}, {"unit": "I", "topic": "Diarrhea"}, {"unit": "I", "topic": "Constipation"}, {"unit": "I", "topic": "Jaundice"}, {"unit": "I", "topic": "GI bleeding"}, {"unit": "I", "topic": "Abdominal distension"}, {"unit": "I", "topic": "Dysphagia and dyspepsia"}, {"unit": "I", "topic": "Aphthous ulcers"}, {"unit": "I", "topic": "Acute upper respiratory infections - Rhinitis, Sinusitis, Pharyngitis, Laryngitis, Tonsillitis"}, {"unit": "I", "topic": "Acute lower respiratory infections - Bronchitis, pneumonia and bronchial asthma"}, {"unit": "I", "topic": "Hemoptysis, Acute chest pain"}, {"unit": "I", "topic": "Common heart diseases - Heart attack/coronary artery disease, heart failure, arrhythmia"}, {"unit": "I", "topic": "Blood anemia, blood cancers, bleeding disorders"}, {"unit": "I", "topic": "Eye conditions - local infections, redness of eye, conjunctivitis, stye, trachoma and refractive errors"}, {"unit": "I", "topic": "ENT conditions - Epistaxis, ASOM, sore throat, deafness"}, {"unit": "I", "topic": "Urinary tract infections - cystitis, pyelonephritis, prostatitis, UTIs in children"}, {"unit": "I", "topic": "First aid in common emergency conditions (Review) - High fever, low blood sugar, minor injuries, fractures, fainting, bleeding, shock, stroke, bites, burns, choking, seizures, RTAs, poisoning, drowning and foreign bodies"}, {"unit": "II", "topic": "Present situation of reproductive, maternal and child health in India"}, {"unit": "II", "topic": "Antenatal care - objectives, antenatal visits and examination, nutrition during pregnancy, counseling"}, {"unit": "II", "topic": "Calcium and iron supplementation in pregnancy"}, {"unit": "II", "topic": "Antenatal care at health centre level"}, {"unit": "II", "topic": "Birth preparedness"}, {"unit": "II", "topic": "High risk approach - screening/early identification and primary management of complications - antepartum hemorrhage, pre-eclampsia, eclampsia, anemia, gestational diabetes mellitus, hypothyroidism, syphilis"}, {"unit": "II", "topic": "Referral, follow up and maintenance of records and reports (antenatal care)"}, {"unit": "II", "topic": "Normal labour - process, onset, stages of labour"}, {"unit": "II", "topic": "Monitoring and active management of different stages of labour"}, {"unit": "II", "topic": "Care of women after labour"}, {"unit": "II", "topic": "Early identification, primary management, referral and follow up - preterm labour, fetal distress, prolonged and obstructed labour, vaginal & perineal tears, ruptured uterus"}, {"unit": "II", "topic": "Care of newborn immediately after birth"}, {"unit": "II", "topic": "Maintenance of records and reports (intranatal care)"}, {"unit": "II", "topic": "Use of Safe Child Birth Checklist"}, {"unit": "II", "topic": "SBA module - Review"}, {"unit": "II", "topic": "Organization of labour room"}, {"unit": "II", "topic": "Postpartum care - objectives, postnatal visits, care of mother and baby, breast feeding, diet during lactation, and health counseling"}, {"unit": "II", "topic": "Early identification, primary management, referral and follow up of postpartum complications - danger signs, postpartum hemorrhage, shock, puerperal sepsis, breast conditions, postpartum depression"}, {"unit": "II", "topic": "Postpartum visit by health care provider"}, {"unit": "II", "topic": "Essential newborn care (Review)"}, {"unit": "II", "topic": "Management of common neonatal problems"}, {"unit": "II", "topic": "Management of common child health problems - Pneumonia, Diarrhoea, Sepsis, screening for congenital anomalies and referral"}, {"unit": "II", "topic": "IMNCI Module (Review)"}, {"unit": "II", "topic": "Under five clinics"}, {"unit": "II", "topic": "Common health problems and risk factors in adolescent girls and boys"}, {"unit": "II", "topic": "Common gynecological conditions - dysmenorrhea, Premenstrual Syndrome (PMS), vaginal discharge, mastitis, breast lump, pelvic pain, pelvic organ prolapse"}, {"unit": "II", "topic": "Teenage pregnancy, awareness about legal age of marriage, nutritional status of adolescents, National Menstrual Hygiene Scheme"}, {"unit": "II", "topic": "Youth friendly services - SRH service needs"}, {"unit": "II", "topic": "Role and attitude of nurses - privacy, confidentiality, non-judgemental attitude, client autonomy, respectful care and communication"}, {"unit": "II", "topic": "Counseling for parents and teenagers (BCS - balanced counseling strategy)"}, {"unit": "II", "topic": "RMNCH+A Approach - aims, health systems strengthening, RMNCH+A strategies, interventions across life stages, program management, monitoring and evaluation systems"}, {"unit": "II", "topic": "Universal Immunization Program (UIP) as per Government of India guidelines (Review)"}, {"unit": "II", "topic": "Rashtriya Bal Swasthya Karyakram (RBSK) - children"}, {"unit": "II", "topic": "Rashtriya Kishor Swasthya Karyakram (RKSK) - adolescents"}, {"unit": "III", "topic": "Demography and vital statistics - demographic cycle, world population trends, vital statistics"}, {"unit": "III", "topic": "Sex ratio and child sex ratio, trends of sex ratio in India, the causes and social implications"}, {"unit": "III", "topic": "Sources of vital statistics - Census, registration of vital events, sample registration system"}, {"unit": "III", "topic": "Morbidity and mortality indicators - definition, calculation and interpretation"}, {"unit": "III", "topic": "Surveillance, Integrated Disease Surveillance Project (IDSP), organization of IDSP, flow of information and mother and child tracking system (MCTS) in India"}, {"unit": "III", "topic": "Collection, analysis, interpretation, use of data"}, {"unit": "III", "topic": "Common sampling techniques - random and non-random techniques (Review)"}, {"unit": "III", "topic": "Disaggregation of data"}, {"unit": "IV", "topic": "Population explosion and its impact on social, economic development of individual, society and country"}, {"unit": "IV", "topic": "Population control - women empowerment; social, economic and educational development"}, {"unit": "IV", "topic": "Limiting family size - promotion of small family norm, temporary spacing methods (natural, biological, chemical, mechanical methods etc.), terminal methods (tubectomy, vasectomy)"}, {"unit": "IV", "topic": "Emergency contraception"}, {"unit": "IV", "topic": "Counseling in reproductive, sexual health including problems of adolescents"}, {"unit": "IV", "topic": "Medical Termination of Pregnancy and MTP Act"}, {"unit": "IV", "topic": "National Population Stabilization Fund / JSK (Jansankhya Sthirata Kosh)"}, {"unit": "IV", "topic": "Family Planning 2020"}, {"unit": "IV", "topic": "National Family Welfare Program"}, {"unit": "IV", "topic": "Role of a nurse in Family Welfare Program"}, {"unit": "V", "topic": "Occupational health hazards"}, {"unit": "V", "topic": "Occupational diseases"}, {"unit": "V", "topic": "ESI Act"}, {"unit": "V", "topic": "National / State Occupational Health Programs"}, {"unit": "V", "topic": "Role of a nurse in occupational health services - screening, diagnosing, management and referral of clients with occupational health problems"}, {"unit": "VI", "topic": "Health problems of older adults"}, {"unit": "VI", "topic": "Management of common geriatric ailments - counseling, supportive treatment of older adults"}, {"unit": "VI", "topic": "Organization of geriatric health services"}, {"unit": "VI", "topic": "National Program for Health Care of Elderly (NPHCE)"}, {"unit": "VI", "topic": "State level programs / schemes for older adults"}, {"unit": "VI", "topic": "Role of a community health nurse in geriatric health services - screening, diagnosing, management and referral of older adults with health problems"}, {"unit": "VII", "topic": "Screening, management, prevention and referral for mental health disorders"}, {"unit": "VII", "topic": "Depression, anxiety, acute psychosis, Schizophrenia (Review)"}, {"unit": "VII", "topic": "Dementia"}, {"unit": "VII", "topic": "Suicide"}, {"unit": "VII", "topic": "Alcohol and substance abuse"}, {"unit": "VII", "topic": "Drug de-addiction program"}, {"unit": "VII", "topic": "National Mental Health Program"}, {"unit": "VII", "topic": "National Mental Health Policy"}, {"unit": "VII", "topic": "National Mental Health Act"}, {"unit": "VII", "topic": "Role of a community health nurse in screening, initiation of treatment and follow up of mentally ill clients"}, {"unit": "VIII", "topic": "Introduction to health management system - data elements, recording and reporting formats, data quality issues"}, {"unit": "VIII", "topic": "Basic demography and vital statistics (Review)"}, {"unit": "VIII", "topic": "Sources of vital statistics (Review)"}, {"unit": "VIII", "topic": "Common sampling techniques, frequency distribution (Review)"}, {"unit": "VIII", "topic": "Collection, analysis, interpretation of data (Review)"}, {"unit": "VIII", "topic": "Analysis of data for community needs assessment and preparation of health action plan"}, {"unit": "IX", "topic": "Planning, budgeting and material management of CHC, PHC, SC/HWC"}, {"unit": "IX", "topic": "Manpower planning as per IPHS standards"}, {"unit": "IX", "topic": "Rural - organization, staffing and material management of rural health services provided by Government at village, SC/HWC, PHC, CHC, hospitals (district, state and central)"}, {"unit": "IX", "topic": "Urban - organization, staffing, and functions of urban health services provided by Government at slums, dispensaries, special clinics, municipal and corporate hospitals"}, {"unit": "IX", "topic": "Defense services"}, {"unit": "IX", "topic": "Institutional services"}, {"unit": "IX", "topic": "Other systems of medicine and health - Indian system of medicine, AYUSH clinics, alternative health care system referral systems, indigenous health services"}, {"unit": "X", "topic": "Work responsibilities / job description of DPHN, Health Visitor, PHN, MPHW (Female), Multipurpose Health Worker (Male), AWWs and ASHA"}, {"unit": "X", "topic": "Roles and responsibilities of Mid-Level Health Care Providers (MLHPs)"}, {"unit": "X", "topic": "Village Health Sanitation and Nutrition Committees (VHSNC) - objectives, composition and roles & responsibilities"}, {"unit": "X", "topic": "Health team management"}, {"unit": "X", "topic": "Leadership & supervision - concepts, principles & methods (Review)"}, {"unit": "X", "topic": "Leadership in health - leadership approaches in healthcare setting, taking control of health of community and organizing health camps, village clinics"}, {"unit": "X", "topic": "Training, supportive supervision and monitoring - concepts, principles and process, e.g. performance of frontline health workers"}, {"unit": "X", "topic": "Financial management and accounting & computing at Health Centers (SC) - activities for which funds are received"}, {"unit": "X", "topic": "Accounting and book keeping requirements - accounting principles & policies, books of accounts, basic accounting entries, accounting process, payments & expenditure, fixed asset, SOE reporting format, utilization certificate (UC) reporting"}, {"unit": "X", "topic": "Preparing a budget"}, {"unit": "X", "topic": "Audit"}, {"unit": "X", "topic": "Concepts of records and reports - importance, legal implications, purposes, use of records, principles of record writing, filing of records"}, {"unit": "X", "topic": "Types of records - community related records, registers, guidelines for maintaining"}, {"unit": "X", "topic": "Report writing - purposes, documentation of activities, types of reports"}, {"unit": "X", "topic": "Medical Records Department - functions, filing and retention of medical records"}, {"unit": "X", "topic": "Electronic Medical Records (EMR) - capabilities and components of EMR, electronic health record (EHR), levels of automation, attributes, benefits and disadvantages of EHR"}, {"unit": "X", "topic": "Nurses' responsibility in record keeping and reporting"}, {"unit": "XI", "topic": "Disaster types and magnitude"}, {"unit": "XI", "topic": "Disaster preparedness"}, {"unit": "XI", "topic": "Emergency preparedness"}, {"unit": "XI", "topic": "Common problems during disasters and methods to overcome"}, {"unit": "XI", "topic": "Basic disaster supplies kit"}, {"unit": "XI", "topic": "Disaster response including emergency relief measures and life saving techniques"}, {"unit": "XII", "topic": "Waste collection, segregation, transportation and management in the community"}, {"unit": "XII", "topic": "Waste management in health center / clinics"}, {"unit": "XII", "topic": "Bio-medical waste management guidelines - 2016, 2018 (Review)"}, {"unit": "XIII", "topic": "International health agencies - WHO, UNFPA, UNDP, World Bank, FAO, UNICEF, European Commission, Red Cross, USAID, UNESCO, ILO, CAR, CIDA, JHPIEGO, and others"}, {"unit": "XIII", "topic": "National health agencies - Indian Red Cross, Indian Council for Child Welfare, Family Planning Association of India, Tuberculosis Association of India, Central Social Welfare Board, All India Women's Conference, Blind Association of India, and others"}, {"unit": "XIII", "topic": "Voluntary Health Association of India (VHA)"}], "Nursing Research and Statistics": [{"unit": "I", "topic": "Introduction and need for nursing research"}, {"unit": "I", "topic": "Definition of Research & nursing research"}, {"unit": "I", "topic": "Steps of scientific method"}, {"unit": "I", "topic": "Characteristics of good research"}, {"unit": "I", "topic": "Steps of Research process - overview"}, {"unit": "I", "topic": "Evidence Based Practice - Concept, Meaning, Purposes, Steps of EBP Process and Barriers"}, {"unit": "II", "topic": "Identification of problem area"}, {"unit": "II", "topic": "Problem statement"}, {"unit": "II", "topic": "Criteria of a good research problem"}, {"unit": "II", "topic": "Writing objectives and hypotheses"}, {"unit": "III", "topic": "Location (of literature)"}, {"unit": "III", "topic": "Sources (of literature)"}, {"unit": "III", "topic": "On line search - CINAHL, COCHRANE etc."}, {"unit": "III", "topic": "Purposes (of review of literature)"}, {"unit": "III", "topic": "Method of review"}, {"unit": "IV", "topic": "Historical, survey and experimental research approaches"}, {"unit": "IV", "topic": "Qualitative and Quantitative designs"}, {"unit": "V", "topic": "Definition of Population, Sample"}, {"unit": "V", "topic": "Sampling criteria, factors influencing sampling process, types of sampling techniques"}, {"unit": "V", "topic": "Data - why, what, from whom, when and where to collect"}, {"unit": "V", "topic": "Methods of data collection"}, {"unit": "V", "topic": "Questioning, interviewing"}, {"unit": "V", "topic": "Observations, record analysis and measurement"}, {"unit": "V", "topic": "Types of instruments, Validity & Reliability of the Instrument"}, {"unit": "V", "topic": "Research ethics"}, {"unit": "V", "topic": "Pilot study"}, {"unit": "V", "topic": "Data collection procedure"}, {"unit": "VI", "topic": "Compilation of data"}, {"unit": "VI", "topic": "Tabulation of data"}, {"unit": "VI", "topic": "Classification of data"}, {"unit": "VI", "topic": "Summarization of data"}, {"unit": "VI", "topic": "Presentation of data"}, {"unit": "VI", "topic": "Interpretation of data"}, {"unit": "VII", "topic": "Definition, use of statistics, scales of measurement"}, {"unit": "VII", "topic": "Frequency distribution and graphical presentation of data"}, {"unit": "VII", "topic": "Mean, Median, Mode, Standard deviation"}, {"unit": "VII", "topic": "Normal Probability and tests of significance"}, {"unit": "VII", "topic": "Co-efficient of correlation"}, {"unit": "VII", "topic": "Statistical packages and its application"}, {"unit": "VIII", "topic": "Communication of research findings"}, {"unit": "VIII", "topic": "Verbal report"}, {"unit": "VIII", "topic": "Writing research report"}, {"unit": "VIII", "topic": "Writing scientific article / paper"}, {"unit": "VIII", "topic": "Critical review of published research including publication ethics"}, {"unit": "VIII", "topic": "Utilization of research findings"}, {"unit": "VIII", "topic": "Conducting group research project"}], "OBG Nursing II": [{"unit": "I", "topic": "Assessment of high-risk pregnancy"}, {"unit": "I", "topic": "Hyperemesis gravidarum"}, {"unit": "I", "topic": "Bleeding in early pregnancy - abortion, ectopic pregnancy, vesicular mole"}, {"unit": "I", "topic": "Unintended or mistimed pregnancy"}, {"unit": "I", "topic": "Post abortion care & counseling"}, {"unit": "I", "topic": "Bleeding in late pregnancy - placenta previa, abruption placenta, trauma"}, {"unit": "I", "topic": "Medical conditions complicating pregnancy - Anemia, PIH/Pre-eclampsia, Eclampsia, GDM, cardiac disease, pulmonary disease, thyrotoxicosis, STDs, HIV, Rh incompatibility"}, {"unit": "I", "topic": "Infections in pregnancy - urinary tract infection, bacterial, viral, protozoal, fungal, malaria in pregnancy"}, {"unit": "I", "topic": "Surgical conditions complicating pregnancy - appendicitis, acute abdomen"}, {"unit": "I", "topic": "COVID-19 & pregnancy and children"}, {"unit": "I", "topic": "Hydramnios"}, {"unit": "I", "topic": "Multiple pregnancy"}, {"unit": "I", "topic": "Abnormalities of placenta and cord"}, {"unit": "I", "topic": "Intra uterine growth restriction"}, {"unit": "I", "topic": "Intra uterine fetal death"}, {"unit": "I", "topic": "Gynaecological conditions complicating pregnancy"}, {"unit": "I", "topic": "Mental health issues during pregnancy"}, {"unit": "I", "topic": "Adolescent pregnancy"}, {"unit": "I", "topic": "Elderly primi, grand multiparity"}, {"unit": "I", "topic": "Management and care of conditions as per the GoI protocol"}, {"unit": "I", "topic": "Policy for the referral services"}, {"unit": "I", "topic": "Drugs used in management of high-risk pregnancies"}, {"unit": "I", "topic": "Maintenance of records and reports"}, {"unit": "II", "topic": "Preterm labour - Prevention and management of preterm labour (use of antenatal corticosteroids in preterm labour)"}, {"unit": "II", "topic": "Premature rupture of membranes"}, {"unit": "II", "topic": "Malpositions and abnormal presentations (posterior position, breech, brow, face, shoulder)"}, {"unit": "II", "topic": "Contracted Pelvis, Cephalo Pelvic Disproportion (CPD)"}, {"unit": "II", "topic": "Disorders of uterine action - Prolonged labour, Precipitate labour, Dysfunctional labour"}, {"unit": "II", "topic": "Retained placenta"}, {"unit": "II", "topic": "Injuries to birth canal"}, {"unit": "II", "topic": "Postpartum hemorrhage (bimanual compression of the uterus, aortic compression, uterine balloon tamponade)"}, {"unit": "II", "topic": "Foetal distress"}, {"unit": "II", "topic": "Ruptured uterus"}, {"unit": "II", "topic": "Cord prolapse"}, {"unit": "II", "topic": "Shoulder dystocia"}, {"unit": "II", "topic": "Uterine inversion"}, {"unit": "II", "topic": "Vasa previa"}, {"unit": "II", "topic": "Obstetrical shock"}, {"unit": "II", "topic": "Amniotic fluid embolism"}, {"unit": "II", "topic": "Episiotomy and suturing"}, {"unit": "II", "topic": "Obstetric procedures - Forceps delivery, Vacuum delivery, Version"}, {"unit": "II", "topic": "Induction of labour - Medical & surgical"}, {"unit": "II", "topic": "Caesarean section - indications and preparation"}, {"unit": "II", "topic": "Nursing management of women undergoing obstetric operations and procedures"}, {"unit": "II", "topic": "Drugs used in management of abnormal labour"}, {"unit": "II", "topic": "Anesthesia and analgesia in obstetrics"}, {"unit": "III", "topic": "Physical examination, identification of deviation from normal"}, {"unit": "III", "topic": "Puerperal pyrexia"}, {"unit": "III", "topic": "Puerperal sepsis"}, {"unit": "III", "topic": "Urinary complications"}, {"unit": "III", "topic": "Secondary Postpartum hemorrhage"}, {"unit": "III", "topic": "Vulval hematoma"}, {"unit": "III", "topic": "Breast engorgement including mastitis / breast abscess, feeding problem"}, {"unit": "III", "topic": "Thrombophlebitis"}, {"unit": "III", "topic": "DVT (Deep Vein Thrombosis)"}, {"unit": "III", "topic": "Uterine sub involution"}, {"unit": "III", "topic": "Vesico vaginal fistula (VVF), Recto vaginal fistula (RVF)"}, {"unit": "III", "topic": "Postpartum depression / psychosis"}, {"unit": "III", "topic": "Drugs used in abnormal puerperium"}, {"unit": "III", "topic": "Policy about referral"}, {"unit": "IV", "topic": "Models of newborn care in India - NBCC; SNCUs"}, {"unit": "IV", "topic": "Screening of high-risk newborn"}, {"unit": "IV", "topic": "Protocols, levels of neonatal care, infection control"}, {"unit": "IV", "topic": "Prematurity, Post-maturity"}, {"unit": "IV", "topic": "Low birth weight"}, {"unit": "IV", "topic": "Kangaroo Mother Care"}, {"unit": "IV", "topic": "Birth asphyxia / Hypoxic encephalopathy"}, {"unit": "IV", "topic": "Neonatal sepsis"}, {"unit": "IV", "topic": "Hypothermia"}, {"unit": "IV", "topic": "Respiratory distress"}, {"unit": "IV", "topic": "Jaundice"}, {"unit": "IV", "topic": "Neonatal infections"}, {"unit": "IV", "topic": "High fever"}, {"unit": "IV", "topic": "Convulsions"}, {"unit": "IV", "topic": "Neonatal tetanus"}, {"unit": "IV", "topic": "Congenital anomalies"}, {"unit": "IV", "topic": "Baby of HIV positive mothers"}, {"unit": "IV", "topic": "Baby of Rh negative mothers"}, {"unit": "IV", "topic": "Birth injuries"}, {"unit": "IV", "topic": "SIDS (Sudden Infant Death Syndrome) prevention, Compassionate care"}, {"unit": "IV", "topic": "Calculation of fluid requirements, EBM / formula feeds / tube feeding"}, {"unit": "IV", "topic": "Home based newborn care program - community facility integration in newborn care"}, {"unit": "IV", "topic": "Decision making about management and referral"}, {"unit": "IV", "topic": "Bereavement counseling"}, {"unit": "IV", "topic": "Drugs used for high risk newborns"}, {"unit": "IV", "topic": "Maintenance of records and reports"}, {"unit": "V", "topic": "Gynecological assessment - History and Physical assessment"}, {"unit": "V", "topic": "Breast Self-Examination"}, {"unit": "V", "topic": "Congenital abnormalities of female reproductive system"}, {"unit": "V", "topic": "Menstrual abnormalities"}, {"unit": "V", "topic": "Abnormal uterine bleed"}, {"unit": "V", "topic": "Pelvic inflammatory disease"}, {"unit": "V", "topic": "Infections of the reproductive tract"}, {"unit": "V", "topic": "Uterine displacement"}, {"unit": "V", "topic": "Endometriosis"}, {"unit": "V", "topic": "Uterine and cervical fibroids and polyps"}, {"unit": "V", "topic": "Tumors - uterine, cervical, ovarian, vaginal, vulval"}, {"unit": "V", "topic": "Cysts - ovarian, vulval"}, {"unit": "V", "topic": "Cystocele, urethrocele, rectocele"}, {"unit": "V", "topic": "Genito-urinary fistulas"}, {"unit": "V", "topic": "Breast disorders - infections, deformities, cysts, tumors"}, {"unit": "V", "topic": "HPV vaccination"}, {"unit": "V", "topic": "Disorders of Puberty and menopause"}, {"unit": "V", "topic": "Hormonal replacement therapy"}, {"unit": "V", "topic": "Infertility - definition, causes"}, {"unit": "V", "topic": "Counseling the infertile couple"}, {"unit": "V", "topic": "Investigations - male and female"}, {"unit": "V", "topic": "Artificial reproductive technology"}, {"unit": "V", "topic": "Surrogacy, sperm and ovum donation, cryopreservation"}, {"unit": "V", "topic": "Adoption - counseling, procedures"}, {"unit": "V", "topic": "Injuries and Trauma; Sexual violence"}, {"unit": "V", "topic": "Drugs used in treatment of gynaecological disorders"}]}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<input type="file" id="examImageInput" accept="image/*" multiple onchange="onExamImagesSelected(this.files)">
+<input type="file" id="examFileInput" accept=".csv,.xlsx,.xls" onchange="onExamFileSelected(this.files)">
+<script>
+/* ============ CONFIG / META ============ */
+const SUBJECT_META = {
+  "Child Health Nursing II": { short:"Child Health", icon:"🧸", color:"#4FD1C5" },
+  "Mental Health Nursing II": { short:"Mental Health", icon:"🧠", color:"#B893E0" },
+  "Community Health Nursing II": { short:"Community Health", icon:"🏘️", color:"#7FCB8C" },
+  "Nursing Research and Statistics": { short:"Research & Stats", icon:"📊", color:"#F2A65A" },
+  "OBG Nursing II": { short:"OBG Nursing", icon:"🤰", color:"#E8697A" },
+};
+const SUBJECTS = Object.keys(SUBJECT_META);
+const SYLLABUS = JSON.parse(document.getElementById('syllabus-data').textContent);
+
+/* ============ SEED QUIZ BANK (real content, hand-authored) ============ */
+const QUIZ_BANK = {
+"Child Health Nursing II":[
+ {q:"Tetralogy of Fallot (TOF) is classified as which type of congenital heart disease?", opts:["Acyanotic","Cyanotic","Obstructive only","Valvular only"], a:1, ex:"TOF is a cyanotic heart defect — its four features (VSD, pulmonary stenosis, overriding aorta, RV hypertrophy) cause right-to-left shunting and cyanosis."},
+ {q:"Hirschsprung's disease (congenital megacolon) results from the absence of ganglion cells in which structure?", opts:["Rectum and distal colon","Stomach wall","Duodenum","Appendix"], a:0, ex:"Absent ganglion cells in the distal colon/rectum prevent peristalsis, causing functional obstruction and megacolon proximal to the aganglionic segment."},
+ {q:"Wilms tumor primarily originates in which organ?", opts:["Liver","Kidney","Pancreas","Bladder"], a:1, ex:"Wilms tumor (nephroblastoma) is an embryonal kidney tumor, one of the most common childhood renal malignancies."},
+ {q:"Spina bifida is a congenital malformation of which system?", opts:["Cardiovascular","Gastrointestinal","Nervous system","Genitourinary"], a:2, ex:"Spina bifida is a neural tube defect involving incomplete closure of the vertebral column, affecting the nervous system."},
+ {q:"Nail biting, thumb sucking, and temper tantrums are classified under which category in the syllabus?", opts:["Psychiatric disorders","Common behavior disorders in children","Communicable diseases","Orthopedic disorders"], a:1, ex:"These are grouped as common behavior disorders of childhood, managed through behavioral guidance rather than medication."},
+ {q:"A child presenting with a barking cough, hoarseness, and pseudomembrane formation in the throat most likely has which communicable disease?", opts:["Pertussis","Diphtheria","Measles","Mumps"], a:1, ex:"Diphtheria classically causes a grey pseudomembrane over the tonsils/pharynx and can obstruct the airway if untreated."},
+ {q:"Thalassemia and hemophilia are both examples of which type of hematological condition in children?", opts:["Acquired","Congenital","Infectious","Nutritional"], a:1, ex:"Both are inherited (congenital) blood disorders — thalassemia affects hemoglobin synthesis, hemophilia affects clotting factors."},
+ {q:"Anorexia nervosa and bulimia in children are categorized under which problem area?", opts:["Orthopedic disorders","Eating disorders","Communicable diseases","Sensory disorders"], a:1, ex:"These are eating disorders addressed under the management of behavioral and social problems in children."},
+],
+"Mental Health Nursing II":[
+ {q:"Admission and discharge procedures for psychiatric patients in India are governed under which act?", opts:["Indian Lunacy Act 1912","Mental Health Care Act (MHCA) 2017","POCSO Act","NDPS Act"], a:1, ex:"MHCA 2017 is the current governing legislation for admission, discharge, and rights of persons with mental illness in India."},
+ {q:"Detoxification, antabuse therapy, and narcotic antagonist therapy are treatment approaches for which condition?", opts:["Personality disorders","Substance use disorders","Organic brain disorders","Childhood autism"], a:1, ex:"These are core pharmacological/behavioral treatments used in managing substance use disorders."},
+ {q:"Delirium, dementia, and amnestic disorders are grouped together under which category?", opts:["Personality disorders","Organic brain disorders","Sexual disorders","Childhood disorders"], a:1, ex:"These conditions share an organic (physiological/structural brain) basis, distinguishing them from purely functional psychiatric disorders."},
+ {q:"MET (Motivational Enhancement Therapy) and refusal-skills training are primarily used in the management of which disorder group?", opts:["Substance use disorders","Autism spectrum disorder","Dementia","Personality disorders"], a:0, ex:"MET and refusal-skills training build motivation to change and resist relapse triggers in substance use treatment."},
+ {q:"The POCSO Act specifically protects children from which type of harm?", opts:["Malnutrition","Sexual offences","Substance abuse","Educational neglect"], a:1, ex:"POCSO (Protection of Children from Sexual Offences) Act addresses sexual abuse and exploitation of minors."},
+ {q:"Which of the following is listed as a psychiatric emergency requiring crisis intervention?", opts:["Delirium tremens","Common cold","Mild insomnia","Seasonal allergy"], a:0, ex:"Delirium tremens, attempted suicide, and violence/aggression are classified as psychiatric emergencies needing urgent crisis intervention."},
+ {q:"Autism, ADHD, and learning disorders are addressed under nursing management of disorders occurring during which life stage?", opts:["Old age","Childhood and adolescence","Adulthood only","Neonatal period only"], a:1, ex:"These behavioral/emotional disorders are specifically covered under childhood and adolescent mental health nursing."},
+],
+"Community Health Nursing II":[
+ {q:"IMNCI is a strategy primarily used for the management of which group?", opts:["Elderly patients","Neonatal and childhood illnesses","Occupational injuries","Antenatal complications only"], a:1, ex:"IMNCI (Integrated Management of Neonatal and Childhood Illness) provides a structured approach to managing sick young children and newborns at the primary care level."},
+ {q:"IDSP stands for which national surveillance system?", opts:["Integrated Disease Surveillance Project","Indian Diabetes Screening Program","Immunization Data Sharing Project","Infant Death Surveillance Program"], a:0, ex:"IDSP tracks disease trends and detects outbreaks early through a structured reporting flow across health facilities."},
+ {q:"The ESI Act is most relevant to which area of community health nursing?", opts:["Occupational health","Geriatric health","School health","Adolescent health"], a:0, ex:"The Employees' State Insurance (ESI) Act relates to occupational health protections and benefits for workers."},
+ {q:"NPHCE is a national program focused on the health of which population?", opts:["Adolescents","Elderly/older adults","Pregnant women","Infants"], a:1, ex:"The National Programme for Health Care of the Elderly (NPHCE) addresses geriatric health services."},
+ {q:"VHSNC stands for which community-level committee?", opts:["Village Health Sanitation and Nutrition Committee","Vaccine and Health Safety National Council","Village Hospital Services and Nursing Cell","Voluntary Health Service Network Committee"], a:0, ex:"VHSNCs are village-level bodies responsible for planning and monitoring local health, sanitation, and nutrition activities."},
+ {q:"The MTP Act in India primarily governs which procedure?", opts:["Medical Termination of Pregnancy","Male Tubal Procedure","Maternal Transport Protocol","Multi-drug Therapy Program"], a:0, ex:"The Medical Termination of Pregnancy (MTP) Act regulates the legal conditions under which pregnancy can be terminated in India."},
+ {q:"Kangaroo Mother Care is a community-recommended intervention primarily for which newborns?", opts:["Post-term babies","Low birth weight/preterm babies","Babies with jaundice only","Babies born by caesarean only"], a:1, ex:"KMC uses skin-to-skin contact to stabilize temperature, promote breastfeeding, and support low birth weight and preterm infants."},
+],
+"Nursing Research and Statistics":[
+ {q:"Which is generally considered the first step of the research process?", opts:["Data analysis","Identifying/defining the research problem","Writing the report","Sampling"], a:1, ex:"The research process begins with identifying a researchable problem before objectives, design, and data collection can be planned."},
+ {q:"Which measure of central tendency is most affected by extreme outlier values?", opts:["Median","Mode","Mean","Range"], a:2, ex:"The mean uses every value in its calculation, so extreme scores pull it more than the median or mode."},
+ {q:"CINAHL and COCHRANE are examples of what, in the context of a literature review?", opts:["Statistical formulas","Online research databases","Types of research design","Sampling techniques"], a:1, ex:"They are electronic databases nursing researchers search to locate relevant published literature."},
+ {q:"Validity and reliability are properties primarily associated with which part of the research process?", opts:["The research instrument/data collection tool","The final report format","The budget","The title page"], a:0, ex:"A valid instrument measures what it claims to measure; a reliable one produces consistent results — both are tested before use."},
+ {q:"EBP in nursing research stands for:", opts:["Essential Bedside Practice","Evidence-Based Practice","Extended Ballot Process","Ethical Board Procedure"], a:1, ex:"Evidence-Based Practice integrates the best available research evidence with clinical expertise and patient values."},
+ {q:"What is the main purpose of conducting a pilot study?", opts:["To publish preliminary results","To test and refine the data collection tool/procedure before the main study","To skip ethical approval","To recruit the final sample"], a:1, ex:"A pilot study identifies practical problems with instruments or procedures on a small scale before full implementation."},
+],
+"OBG Nursing II":[
+ {q:"Placenta previa and abruptio placentae are causes of bleeding during which period of pregnancy?", opts:["Early pregnancy","Late pregnancy","Immediately after conception","Only during labour"], a:1, ex:"Both are classified under antepartum hemorrhage occurring in late pregnancy, distinct from early pregnancy bleeding like abortion or ectopic pregnancy."},
+ {q:"PIH is the abbreviation for which pregnancy complication?", opts:["Pregnancy-Induced Hypertension","Postpartum Infection Hazard","Prenatal Iron deficiency","Placental Insertion Hemorrhage"], a:0, ex:"PIH (Pregnancy-Induced Hypertension) includes pre-eclampsia and eclampsia as its progressive forms."},
+ {q:"Kangaroo Mother Care is primarily used in the management of which condition?", opts:["Postpartum depression","Low birth weight/preterm neonates","Placenta previa","Puerperal sepsis"], a:1, ex:"KMC provides thermoregulation, bonding, and feeding support for small and preterm babies through skin-to-skin contact."},
+ {q:"Retained placenta and postpartum hemorrhage are complications of which stage of labour?", opts:["First stage","Second stage","Third stage","Fourth stage only"], a:2, ex:"The third stage of labour (delivery of the placenta) is where retained placenta and immediate PPH most commonly arise."},
+ {q:"CPD in obstetrics refers to:", opts:["Cephalopelvic Disproportion","Chronic Pelvic Discomfort","Cervical Position Deviation","Congenital Pelvic Defect"], a:0, ex:"CPD occurs when the fetal head is too large relative to the maternal pelvis, potentially causing obstructed labour."},
+ {q:"Puerperal sepsis is an infection that occurs during which period?", opts:["Antenatal period","Puerperium (postpartum period)","Pre-conception period","Menopause"], a:1, ex:"Puerperal sepsis is a genital tract infection arising after childbirth, during the puerperium."},
+],
+};
+
+/* ============ CLINICAL / OT SIMULATIONS ============ */
+const SIM_SCENARIOS = [
+ {
+   id:'obg_lscs', title:'Emergency LSCS', subject:'OBG Nursing II', icon:'🏥', setting:'Operating Theatre',
+   intro:"You are the circulating nurse assisting an emergency lower-segment caesarean section (LSCS) for fetal distress. Make the right call at each stage to keep mother and baby safe.",
+   steps:[
+     { prompt:"The patient arrives in the OT. What is your first action?",
+       choices:[
+         {text:"Verify patient identity, consent, and surgical site per the WHO Sign-In checklist", correct:true, fb:"Correct — identity and consent verification is the mandatory first safety step before any procedure begins."},
+         {text:"Position the patient for surgery immediately", correct:false, fb:"Not yet — positioning comes after identity, consent, and Sign-In checks are complete."},
+         {text:"Start IV fluids without confirming identity", correct:false, fb:"Skipping identification risks a wrong-patient error — always verify first."},
+         {text:"Begin skin preparation straight away", correct:false, fb:"Skin prep follows the Sign-In checklist, not before it."}
+       ]},
+     { prompt:"Just before incision, the team pauses for the WHO 'Time Out.' What is confirmed during this pause?",
+       choices:[
+         {text:"Team introductions, the planned procedure, correct site, and any critical concerns", correct:true, fb:"Correct — Time Out confirms the whole team agrees on patient, procedure, and site before cutting."},
+         {text:"The patient's billing details", correct:false, fb:"Billing is unrelated to surgical safety checks."},
+         {text:"Post-operative ward bed availability", correct:false, fb:"Bed availability isn't part of the intraoperative safety pause."},
+         {text:"Anesthesia machine calibration only", correct:false, fb:"Machine checks happen earlier during Sign-In, not the Time Out."}
+       ]},
+     { prompt:"The neonate is delivered but is not breathing spontaneously. What is your priority as you assist the pediatric team?",
+       choices:[
+         {text:"Provide warmth, clear the airway, stimulate, and assist with bag-mask ventilation per NRP steps", correct:true, fb:"Correct — these are the core initial steps of neonatal resuscitation."},
+         {text:"Document the delivery time and wait", correct:false, fb:"Documentation matters, but immediate resuscitation steps take priority for a non-breathing neonate."},
+         {text:"Wait for the baby to cry on its own", correct:false, fb:"Passive waiting risks hypoxic injury — active steps are needed immediately."},
+         {text:"Hand the baby to the mother right away", correct:false, fb:"The neonate needs stabilization first before any handling for bonding."}
+       ]},
+     { prompt:"During closure, the surgeon notes increased bleeding suggestive of postpartum hemorrhage. What is your role?",
+       choices:[
+         {text:"Prepare and administer uterotonics as ordered, monitor vitals closely, and call for additional help", correct:true, fb:"Correct — active PPH management with uterotonics and vigilant monitoring is essential, and extra hands should be summoned early."},
+         {text:"Step out for a break", correct:false, fb:"This is a critical moment requiring your full attention and assistance."},
+         {text:"Assume it's the surgeon's responsibility alone", correct:false, fb:"PPH management is a team effort — nursing support is critical."},
+         {text:"Reduce the IV fluid rate", correct:false, fb:"In hemorrhage, fluid support is usually increased, not reduced, per orders."}
+       ]},
+     { prompt:"Before the patient leaves the OT, what must be verified during the WHO 'Sign-Out'?",
+       choices:[
+         {text:"Instrument, sponge, and needle counts are correct; specimens are labeled; key concerns are handed over to recovery", correct:true, fb:"Correct — Sign-Out prevents retained items and ensures safe handover to the recovery team."},
+         {text:"The patient's meal preference", correct:false, fb:"Not a surgical safety concern at this stage."},
+         {text:"Family visiting hours", correct:false, fb:"Unrelated to the Sign-Out safety checklist."},
+         {text:"The OT cleaning schedule", correct:false, fb:"Housekeeping is separate from the clinical Sign-Out checklist."}
+       ]},
+   ]
+ },
+ {
+   id:'child_nrp', title:'Neonatal Resuscitation', subject:'Child Health Nursing II', icon:'👶', setting:'Neonatal Resuscitation Area',
+   intro:"A baby has just been born and is limp, not crying, and not breathing well. Work through the resuscitation steps in the correct order.",
+   steps:[
+     { prompt:"The baby is born limp and not crying. What is your first step?",
+       choices:[
+         {text:"Provide warmth, position the airway, and dry and stimulate the baby", correct:true, fb:"Correct — these initial steps often trigger spontaneous breathing and prevent heat loss."},
+         {text:"Start chest compressions immediately", correct:false, fb:"Compressions are only started after ventilation fails to raise the heart rate — not as a first step."},
+         {text:"Give oxygen by face mask only, no other action", correct:false, fb:"Initial steps (warmth, positioning, stimulation) must come first."},
+         {text:"Call the mother over immediately", correct:false, fb:"The baby needs immediate stabilization before any bonding contact."}
+       ]},
+     { prompt:"After initial steps, the heart rate is 80 bpm and the baby still isn't breathing. Next step?",
+       choices:[
+         {text:"Start Positive Pressure Ventilation (PPV) with bag and mask", correct:true, fb:"Correct — PPV is indicated for a heart rate under 100 bpm with inadequate breathing."},
+         {text:"Continue drying only", correct:false, fb:"Drying alone won't correct inadequate breathing and low heart rate at this point."},
+         {text:"Suction deeply and repeatedly", correct:false, fb:"Deep, repeated suctioning isn't the priority and can cause vagal bradycardia."},
+         {text:"Wait 5 more minutes to reassess", correct:false, fb:"Delaying intervention risks worsening hypoxia — act now."}
+       ]},
+     { prompt:"After 30 seconds of effective PPV, the heart rate remains below 60 bpm. Next step?",
+       choices:[
+         {text:"Start chest compressions coordinated with ventilation (3:1 ratio)", correct:true, fb:"Correct — a heart rate under 60 bpm despite effective PPV requires coordinated chest compressions."},
+         {text:"Stop resuscitation efforts", correct:false, fb:"Resuscitation should continue — the heart rate is still critically low."},
+         {text:"Attempt oral feeding", correct:false, fb:"Feeding is entirely inappropriate during active resuscitation."},
+         {text:"Wrap the baby and just observe", correct:false, fb:"Passive observation is unsafe with a heart rate this low."}
+       ]},
+     { prompt:"The heart rate improves to 120 bpm and the baby starts crying. Next step?",
+       choices:[
+         {text:"Provide routine post-resuscitation care: monitor closely and keep warm, ideally with skin-to-skin contact", correct:true, fb:"Correct — once stable, ongoing monitoring and warmth (e.g. skin-to-skin) support recovery."},
+         {text:"Discharge home immediately", correct:false, fb:"The baby needs a period of close observation before any discharge planning."},
+         {text:"Continue chest compressions to be safe", correct:false, fb:"Compressions should stop once the heart rate is adequate — continuing is unnecessary and harmful."},
+         {text:"No further monitoring is needed", correct:false, fb:"Close monitoring is still essential after a resuscitation event."}
+       ]},
+   ]
+ },
+ {
+   id:'mh_crisis', title:'Psychiatric Emergency', subject:'Mental Health Nursing II', icon:'🧠', setting:'Inpatient Psychiatric Ward',
+   intro:"A patient on the ward becomes agitated and verbally threatening. Navigate the crisis using safe, evidence-based de-escalation and legal protocol.",
+   steps:[
+     { prompt:"The patient becomes agitated and verbally threatening. What is your first action?",
+       choices:[
+         {text:"Ensure your own safety and others' safety, stay calm, and assess for possible triggers", correct:true, fb:"Correct — safety first, followed by a calm assessment, sets up effective de-escalation."},
+         {text:"Physically restrain the patient immediately", correct:false, fb:"Restraint is a last resort after de-escalation attempts fail and is subject to strict protocol."},
+         {text:"Ignore the behavior and continue other tasks", correct:false, fb:"Ignoring escalating agitation risks the situation worsening unsupervised."},
+         {text:"Argue back to assert control", correct:false, fb:"Confrontation typically escalates agitation rather than reducing it."}
+       ]},
+     { prompt:"Which approach best reflects proper de-escalation technique?",
+       choices:[
+         {text:"Non-threatening body language, a calm tone, offering choices, and active listening", correct:true, fb:"Correct — these techniques reduce arousal and help the patient regain a sense of control."},
+         {text:"Crossing your arms and staring directly at the patient", correct:false, fb:"This body language can appear confrontational and increase agitation."},
+         {text:"Raising your voice to be heard over the patient", correct:false, fb:"A raised voice tends to escalate rather than calm the situation."},
+         {text:"Standing very close to the patient", correct:false, fb:"Invading personal space can heighten a patient's sense of threat."}
+       ]},
+     { prompt:"Despite de-escalation attempts, the patient becomes violent and poses immediate danger. What next?",
+       choices:[
+         {text:"Call for help per hospital protocol, and consider restraint only per physician order and MHCA 2017 guidelines", correct:true, fb:"Correct — restraint is a regulated, last-resort measure requiring proper protocol and documentation."},
+         {text:"Handle the situation alone without calling for backup", correct:false, fb:"Managing violence alone is unsafe for both nurse and patient."},
+         {text:"Apply restraint without any protocol or documentation", correct:false, fb:"Unregulated restraint violates patient rights under MHCA 2017 and safety protocol."},
+         {text:"Leave the patient unsupervised", correct:false, fb:"An unsupervised, violent patient is a serious safety risk to themselves and others."}
+       ]},
+     { prompt:"After the crisis is managed, what documentation is essential?",
+       choices:[
+         {text:"A detailed record of the behavior, interventions used, the patient's response, and any restraint/seclusion details as legally required", correct:true, fb:"Correct — thorough documentation protects the patient's rights and meets legal/regulatory requirements."},
+         {text:"No documentation is needed once the crisis has passed", correct:false, fb:"Documentation is a legal and clinical requirement, not optional."},
+         {text:"A brief note simply stating 'patient was aggressive'", correct:false, fb:"This lacks the detail required for legal and clinical accountability."},
+         {text:"Documentation can be delayed indefinitely", correct:false, fb:"Timely documentation is essential while details are accurate and fresh."}
+       ]},
+   ]
+ },
+ {
+   id:'chn_snakebite', title:'Community Emergency: Snake Bite', subject:'Community Health Nursing II', icon:'🚑', setting:'Primary Health Centre / Field',
+   intro:"A patient is brought to you in the community with a suspected venomous snake bite. Apply correct first-aid and referral protocol.",
+   steps:[
+     { prompt:"What is the correct immediate first-aid action for a suspected snake bite?",
+       choices:[
+         {text:"Keep the patient calm, immobilize the affected limb below heart level, and arrange urgent transport", correct:true, fb:"Correct — immobilization slows venom spread, and urgent transport to a facility with antivenom is critical."},
+         {text:"Apply a tight tourniquet above the bite", correct:false, fb:"Tight tourniquets are not recommended — they can cause tissue damage without reliably preventing venom spread."},
+         {text:"Cut the wound and attempt to suck out the venom", correct:false, fb:"This outdated practice can worsen tissue damage and does not remove venom effectively — it is not recommended."},
+         {text:"Apply ice directly to the bite site", correct:false, fb:"Ice can cause additional tissue damage and does not neutralize venom."}
+       ]},
+     { prompt:"On arrival at the health centre, what should your priority assessment include?",
+       choices:[
+         {text:"Airway, breathing, circulation, and monitoring for signs of envenomation (swelling, bleeding, neurological changes)", correct:true, fb:"Correct — ABC assessment plus specific envenomation signs guides urgent management and referral."},
+         {text:"Only measuring the size of the local swelling", correct:false, fb:"Local swelling alone doesn't capture systemic danger signs."},
+         {text:"Immediate discharge if the patient appears comfortable", correct:false, fb:"Symptoms of envenomation can be delayed — observation is essential before any discharge decision."},
+         {text:"Skipping vital signs since the wound looks minor", correct:false, fb:"Vital signs can reveal systemic effects not visible at the bite site."}
+       ]},
+     { prompt:"The patient shows signs of neurotoxic envenomation (drooping eyelids, difficulty swallowing). What is the priority?",
+       choices:[
+         {text:"Urgent referral for antivenom administration and close monitoring of airway and breathing", correct:true, fb:"Correct — neurotoxic signs indicate a medical emergency requiring antivenom and airway vigilance at a higher facility."},
+         {text:"Reassure the patient and send them home", correct:false, fb:"These are emergency warning signs — the patient needs urgent facility-based care."},
+         {text:"Apply a herbal remedy to the bite", correct:false, fb:"Unproven remedies delay essential medical treatment and can be harmful."},
+         {text:"Wait several hours to see if symptoms resolve on their own", correct:false, fb:"Neurotoxic envenomation can progress to respiratory failure — delay is dangerous."}
+       ]},
+   ]
+ },
+];
+
+/* ============ RENDER: SIM HUB ============ */
+function renderSimHub(){
+  const el = document.getElementById('screen-simhub');
+  let html = `<h2 class="serif" style="margin:0 0 4px;font-size:20px;">Clinical Simulation</h2>
+  <p class="hero-line">Step into a scenario and make real-time nursing decisions. This is an interactive decision simulation (not a headset VR experience) — think through each step as if you were actually there.</p>`;
+  SIM_SCENARIOS.forEach(s=>{
+    html += `<div class="sim-scenario-card" onclick="beginSim('${s.id}')">
+      <div class="ssc-icon">${s.icon}</div>
+      <div><div class="ssc-title">${escapeHtml(s.title)}</div><div class="ssc-sub">${escapeHtml(s.setting)} · ${s.steps.length} decision points · ${escapeHtml(SUBJECT_META[s.subject].short)}</div></div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+/* ============ SIM SESSION ============ */
+let SIM = null;
+function beginSim(id){
+  const scenario = SIM_SCENARIOS.find(s=>s.id===id);
+  SIM = { scenario, i:-1, status:100, mistakes:0, answered:false };
+  go('sim');
+}
+function statusColor(status){
+  if(status >= 70) return 'var(--success)';
+  if(status >= 40) return 'var(--amber)';
+  return 'var(--danger)';
+}
+function renderSim(){
+  const el = document.getElementById('screen-sim');
+  if(!SIM){ el.innerHTML = `<div class="empty-state">No active simulation.</div>`; return; }
+  const s = SIM.scenario;
+  if(SIM.i === -1){
+    el.innerHTML = `<div class="backbar">
+      <button class="backbtn" onclick="go('simhub')">‹</button>
+      <div><h2 style="font-size:15px;">${s.icon} ${escapeHtml(s.title)}</h2></div>
+    </div>
+    <div class="sim-scene">
+      <div class="scene-icon">${s.icon}</div>
+      <div class="scene-setting">${escapeHtml(s.setting.toUpperCase())}</div>
+    </div>
+    <div class="sim-card">
+      <p style="font-size:14px;line-height:1.6;margin:0 0 14px;">${escapeHtml(s.intro)}</p>
+      <button class="btn" onclick="advanceSim()">Begin simulation</button>
+    </div>`;
+    return;
+  }
+  if(SIM.i >= s.steps.length){ renderSimOutcome(); return; }
+  const step = s.steps[SIM.i];
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('simhub')">‹</button>
+    <div><h2 style="font-size:15px;">${s.icon} ${escapeHtml(s.title)}</h2></div>
+  </div>
+  <div class="sim-scene">
+    <div class="scene-icon">${s.icon}</div>
+    <div class="scene-setting">${escapeHtml(s.setting.toUpperCase())}</div>
+    <div class="vitals-monitor">
+      <div class="vmon ${SIM.status>=70?'ok':'warn'}"><div class="vval">${SIM.status}%</div><div class="vlbl">PATIENT STATUS</div></div>
+      <div class="vmon"><div class="vval">${SIM.i+1}/${s.steps.length}</div><div class="vlbl">STEP</div></div>
+    </div>
+    <div class="status-track"><div class="status-fill" style="width:${SIM.status}%;background:${statusColor(SIM.status)}"></div></div>
+  </div>
+  <div class="sim-card">
+    <div class="sim-step-tag">DECISION POINT ${SIM.i+1}</div>
+    <div class="quiz-q">${escapeHtml(step.prompt)}</div>
+    <div id="simOptsWrap">`;
+  step.choices.forEach((c,idx)=>{
+    html += `<button class="opt" onclick="answerSim(${idx})">${escapeHtml(c.text)}</button>`;
+  });
+  html += `</div><div id="simFeedbackWrap"></div></div>`;
+  el.innerHTML = html;
+}
+function answerSim(idx){
+  if(SIM.answered) return;
+  SIM.answered = true;
+  const step = SIM.scenario.steps[SIM.i];
+  const choice = step.choices[idx];
+  const opts = document.querySelectorAll('#simOptsWrap .opt');
+  opts.forEach((btn,i)=>{
+    btn.disabled = true;
+    if(step.choices[i].correct) btn.classList.add('correct');
+    else if(i===idx && !choice.correct) btn.classList.add('wrong');
+  });
+  if(choice.correct){
+    addXP(8);
+  } else {
+    SIM.status = Math.max(0, SIM.status - 25);
+    SIM.mistakes++;
+  }
+  document.getElementById('simFeedbackWrap').innerHTML = `<div class="quiz-explain">${choice.correct?'✅ ':'⚠️ '}${escapeHtml(choice.fb||'')}</div>
+    <button class="btn" style="margin-top:12px;" onclick="advanceSim()">${SIM.i+1 < SIM.scenario.steps.length ? 'Continue':'See outcome'}</button>`;
+}
+function advanceSim(){
+  SIM.i++;
+  SIM.answered = false;
+  renderSim();
+}
+function renderSimOutcome(){
+  const el = document.getElementById('screen-sim');
+  const s = SIM.scenario;
+  let icon, title, msg;
+  if(SIM.mistakes === 0){ icon='🟢'; title='Excellent — stable outcome'; msg='You made every decision correctly. The patient came through the scenario stable and safe, exactly as sound clinical judgement should deliver.'; }
+  else if(SIM.status >= 50){ icon='🟡'; title='Managed, with room to improve'; msg=`You made ${SIM.mistakes} misstep(s) along the way. The outcome was still safe, but review the feedback above to sharpen your decision-making for next time.`; }
+  else { icon='🔴'; title='Outcome compromised'; msg=`${SIM.mistakes} critical misstep(s) affected patient status significantly. Revisit the feedback for each step and try the scenario again.`; }
+  el.innerHTML = `<div class="sim-card sim-outcome">
+    <div class="so-icon">${icon}</div>
+    <div class="so-title">${title}</div>
+    <p style="font-size:13.5px;color:var(--text-muted);line-height:1.6;">${escapeHtml(msg)}</p>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn secondary" onclick="go('simhub')">More scenarios</button>
+      <button class="btn" onclick="beginSim('${s.id}')">Retry</button>
+    </div>
+  </div>`;
+  addXP(SIM.mistakes===0 ? 15 : 5);
+}
+
+/* ============ PRESENTATION MAKER ============ */
+let PPT_MODE = 'unit'; // 'unit' | 'custom'
+let PPT_SELECTED_SUBJECT = SUBJECTS[0];
+let PPT_SELECTED_UNIT = null;
+let PPT_DECK = null; // {title, slides:[{heading,bullets:[]}]}
+let PPT_SLIDE_I = 0;
+
+function renderPptMaker(){
+  const el = document.getElementById('screen-pptmaker');
+  if(!PPT_SELECTED_UNIT) PPT_SELECTED_UNIT = unitsOf(PPT_SELECTED_SUBJECT)[0];
+  let html = `<h2 class="serif" style="margin:0 0 4px;font-size:20px;">Presentation Maker</h2>
+  <p class="hero-line">Turn any unit — or your own topic list — into a slide deck you can present in-app or download as a real .pptx file.</p>
+  <div class="tabbar">
+    <button class="tabbtn ${PPT_MODE==='unit'?'active':''}" onclick="setPptMode('unit')">From syllabus unit</button>
+    <button class="tabbtn ${PPT_MODE==='custom'?'active':''}" onclick="setPptMode('custom')">Custom topics</button>
+  </div>`;
+
+  if(PPT_MODE === 'unit'){
+    html += `<div class="section-title">Subject</div>
+    <div class="unit-select-row">
+      ${SUBJECTS.map(s=>`<div class="unit-chip ${PPT_SELECTED_SUBJECT===s?'active':''}" onclick="pptPickSubject('${escapeAttr(s)}')">${SUBJECT_META[s].icon} ${escapeHtml(SUBJECT_META[s].short)}</div>`).join('')}
+    </div>
+    <div class="section-title">Unit</div>
+    <div class="unit-select-row">
+      ${unitsOf(PPT_SELECTED_SUBJECT).map(u=>`<div class="unit-chip ${PPT_SELECTED_UNIT===u?'active':''}" onclick="pptPickUnit('${escapeAttr(u)}')">Unit ${escapeHtml(u)}</div>`).join('')}
+    </div>
+    <div class="upload-card" style="margin-top:16px;">
+      <p style="margin-bottom:8px;">This will build a deck covering every topic in Unit ${escapeHtml(PPT_SELECTED_UNIT||'')} of ${escapeHtml(SUBJECT_META[PPT_SELECTED_SUBJECT].short)}.</p>
+      <button class="btn" onclick="generatePptFromUnit()">✨ Generate deck</button>
+    </div>`;
+  } else {
+    html += `<div class="field-label">Deck title</div>
+    <input class="field-input" id="pptCustomTitle" placeholder="e.g. Postpartum Hemorrhage — Key Concepts">
+    <div class="field-label">Topics (one per line)</div>
+    <textarea class="field-input" id="pptCustomTopics" placeholder="One topic or point per line..."></textarea>
+    <button class="btn" style="margin-top:10px;" onclick="generatePptFromCustom()">✨ Generate deck</button>`;
+  }
+  html += `<div id="pptStatus" style="margin-top:12px; font-size:12.5px; color:var(--text-muted);"></div>`;
+  el.innerHTML = html;
+}
+function setPptMode(m){ PPT_MODE = m; renderPptMaker(); }
+function pptPickSubject(s){ PPT_SELECTED_SUBJECT = s; PPT_SELECTED_UNIT = unitsOf(s)[0]; renderPptMaker(); }
+function pptPickUnit(u){ PPT_SELECTED_UNIT = u; renderPptMaker(); }
+function pptSetStatus(msg){ const el = document.getElementById('pptStatus'); if(el) el.innerHTML = msg; }
+
+async function generatePptFromUnit(){
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  const topics = SYLLABUS[PPT_SELECTED_SUBJECT].filter(t=>t.unit===PPT_SELECTED_UNIT).map(t=>t.topic);
+  const title = `${SUBJECT_META[PPT_SELECTED_SUBJECT].short} — Unit ${PPT_SELECTED_UNIT}`;
+  await buildDeck(title, topics);
+}
+function generatePptFromCustom(){
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  const title = document.getElementById('pptCustomTitle').value.trim() || 'Nursing Presentation';
+  const topics = document.getElementById('pptCustomTopics').value.split('\n').map(t=>t.trim()).filter(Boolean);
+  if(!topics.length){ pptSetStatus('Add at least one topic or point.'); return; }
+  buildDeck(title, topics);
+}
+async function buildDeck(title, topics){
+  pptSetStatus(`<span class="spinner"></span> Building slides for "${escapeHtml(title)}"...`);
+  const prompt = `Create a concise slide deck outline for a B.Sc. Nursing student presentation.\nDeck title: ${title}\nCover these topics/points (one or more slides per topic as needed, keep total slides between 6 and 14):\n${topics.map((t,i)=>`${i+1}. ${t}`).join('\n')}\n\nRespond ONLY with strict JSON, no markdown fences, in this exact shape:\n{"title":"...", "slides":[{"heading":"...", "bullets":["...","...","..."]}]}\nEach slide should have 3-5 short, exam-relevant bullet points (not full sentences, phrase-level). Include a title slide as slides[0] with the deck title as heading and bullets as a short subtitle/agenda list.`;
+  try{
+    const raw = await callAI(prompt);
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    PPT_DECK = { title: parsed.title || title, slides: parsed.slides || [] };
+    PPT_SLIDE_I = 0;
+    addXP(10);
+    go('pptresult');
+  }catch(err){
+    pptSetStatus('Error: '+err.message);
+  }
+}
+
+function renderPptResult(){
+  const el = document.getElementById('screen-pptresult');
+  if(!PPT_DECK || !PPT_DECK.slides.length){ el.innerHTML = `<div class="empty-state">No deck generated yet.</div>`; return; }
+  const slide = PPT_DECK.slides[PPT_SLIDE_I];
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('pptmaker')">‹</button>
+    <div><h2 style="font-size:15px;">${escapeHtml(PPT_DECK.title)}</h2><div class="sub">Slide ${PPT_SLIDE_I+1} of ${PPT_DECK.slides.length}</div></div>
+  </div>
+  <div class="slide-viewer">
+    <div class="slide-heading">${escapeHtml(slide.heading||'')}</div>
+    <ul>${(slide.bullets||[]).map(b=>`<li>${escapeHtml(b)}</li>`).join('')}</ul>
+    <div class="slide-num">${PPT_SLIDE_I+1}/${PPT_DECK.slides.length}</div>
+  </div>
+  <div class="slide-nav">
+    <button onclick="pptGo(-1)">‹</button>
+    <div class="slide-dots">${PPT_DECK.slides.map((_,i)=>`<div class="slide-dot ${i===PPT_SLIDE_I?'active':''}"></div>`).join('')}</div>
+    <button onclick="pptGo(1)">›</button>
+  </div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn secondary" onclick="presentFullscreen()">🖥 Present fullscreen</button>
+    <button class="btn" onclick="downloadPptx()">⬇ Download .pptx</button>
+  </div>`;
+  el.innerHTML = html;
+}
+function pptGo(dir){
+  PPT_SLIDE_I = Math.max(0, Math.min(PPT_DECK.slides.length-1, PPT_SLIDE_I+dir));
+  renderPptResult();
+}
+function presentFullscreen(){
+  const overlay = document.getElementById('fullscreenSlideOverlay');
+  overlay.classList.add('show');
+  if(overlay.requestFullscreen) overlay.requestFullscreen().catch(()=>{});
+  renderFsSlide();
+}
+function closeFullscreenSlides(){
+  document.getElementById('fullscreenSlideOverlay').classList.remove('show');
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  renderPptResult();
+}
+function renderFsSlide(){
+  const slide = PPT_DECK.slides[PPT_SLIDE_I];
+  document.getElementById('fsHeading').textContent = slide.heading||'';
+  document.getElementById('fsBullets').innerHTML = `<ul>${(slide.bullets||[]).map(b=>`<li>${escapeHtml(b)}</li>`).join('')}</ul>`;
+}
+function fsNext(){ if(PPT_SLIDE_I < PPT_DECK.slides.length-1){ PPT_SLIDE_I++; renderFsSlide(); } }
+function fsPrev(){ if(PPT_SLIDE_I > 0){ PPT_SLIDE_I--; renderFsSlide(); } }
+
+function downloadPptx(){
+  try{
+    const pptx = new PptxGenJS();
+    pptx.defineSlideMaster({ title:'MASTER', background:{color:'10141F'} });
+    PPT_DECK.slides.forEach((s, idx)=>{
+      const slide = pptx.addSlide();
+      slide.background = { color:'10141F' };
+      slide.addText(s.heading||'', { x:0.5, y:0.4, w:9, h:1, fontSize: idx===0?32:26, bold:true, color:'F2A65A', fontFace:'Georgia' });
+      if(s.bullets && s.bullets.length){
+        slide.addText(s.bullets.map(b=>({text:b, options:{bullet:true, breakLine:true}})), { x:0.7, y:1.6, w:8.6, h:4.8, fontSize:16, color:'EDEAE3', fontFace:'Arial' });
+      }
+      slide.addText(`${idx+1}/${PPT_DECK.slides.length}`, { x:9.2, y:5.3, w:0.6, h:0.3, fontSize:9, color:'9098B1' });
+    });
+    pptx.writeFile({ fileName: (PPT_DECK.title||'NurseQuest-Deck').replace(/[^a-z0-9]+/gi,'_') + '.pptx' });
+    showToast('Downloading .pptx...');
+  }catch(err){
+    showToast('Export error: '+err.message);
+  }
+}
+
+/* ============ STATE ============ */
+const DEFAULT_STATE = {
+  xp:0, level:1, streak:0, lastActiveDate:null,
+  completed:{}, // subject -> Set-like object of topic index -> true
+  quizStats:{ taken:0, correct:0 },
+  lastTopic:null, // {subject, unit, topic}
+  apiKey:"", apiProvider:"gemini",
+  theme:"amber",
+  chatHistory:[],
+  badges:{},
+  examSheets:[], // {id, name, type:'image'|'topics', createdAt, items:[{question/topic, answer, diagram:[]}]}
+};
+let STATE = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('nursequest_state_v1');
+    if(!raw) return structuredClone(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+    const st = Object.assign(structuredClone(DEFAULT_STATE), parsed);
+    if(st.apiProvider !== 'gemini'){ st.apiKey = ''; st.apiProvider = 'gemini'; } // key from another provider is not valid for Gemini
+    return st;
+  }catch(e){ return structuredClone(DEFAULT_STATE); }
+}
+function saveState(){
+  localStorage.setItem('nursequest_state_v1', JSON.stringify(STATE));
+}
+
+const THEMES = {
+  amber:{ amber:"#F2A65A", teal:"#4FD1C5" },
+  rose:{ amber:"#E8697A", teal:"#F2A65A" },
+  violet:{ amber:"#B893E0", teal:"#4FD1C5" },
+  mint:{ amber:"#7FCB8C", teal:"#F2A65A" },
+};
+function applyTheme(){
+  const t = THEMES[STATE.theme] || THEMES.amber;
+  document.documentElement.style.setProperty('--amber', t.amber);
+  document.documentElement.style.setProperty('--teal', t.teal);
+}
+
+function xpForLevel(level){ return 100 * level; }
+function addXP(amount){
+  STATE.xp += amount;
+  let needed = xpForLevel(STATE.level);
+  while(STATE.xp >= needed){
+    STATE.xp -= needed;
+    STATE.level += 1;
+    needed = xpForLevel(STATE.level);
+    showToast(`Level up! You're now Level ${STATE.level} 🎉`);
+  }
+  touchStreak();
+  checkBadges();
+  saveState();
+  renderVitals();
+}
+function touchStreak(){
+  const today = new Date().toDateString();
+  if(STATE.lastActiveDate === today) return;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  if(STATE.lastActiveDate === y.toDateString()){ STATE.streak += 1; }
+  else { STATE.streak = 1; }
+  STATE.lastActiveDate = today;
+}
+function checkBadges(){
+  const b = STATE.badges;
+  if(STATE.quizStats.taken >= 1) b.first_quiz = true;
+  if(STATE.quizStats.taken >= 10) b.quiz_10 = true;
+  if(STATE.streak >= 3) b.streak_3 = true;
+  if(STATE.streak >= 7) b.streak_7 = true;
+  if(STATE.level >= 5) b.level_5 = true;
+  const totalDone = Object.values(STATE.completed).reduce((s,o)=>s+Object.keys(o).length,0);
+  if(totalDone >= 20) b.topics_20 = true;
+  if(totalDone >= 100) b.topics_100 = true;
+}
+function markTopicDone(subject, idx){
+  if(!STATE.completed[subject]) STATE.completed[subject] = {};
+  if(!STATE.completed[subject][idx]){
+    STATE.completed[subject][idx] = true;
+    addXP(5);
+  }
+  saveState();
+}
+function subjectProgress(subject){
+  const total = SYLLABUS[subject].length;
+  const done = STATE.completed[subject] ? Object.keys(STATE.completed[subject]).length : 0;
+  return { done, total, pct: total? Math.round(done/total*100):0 };
+}
+
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>el.classList.remove('show'), 2400);
+}
+
+/* ============ NAV ============ */
+let CURRENT_SUBJECT = null;
+let CURRENT_UNIT = null;
+
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+  const map = {home:'home', study:'study', topics:'study', topicdetail:'study', examsheets:'study', examsheetdetail:'study', quizhub:'quizhub', quiz:'quizhub', simhub:'quizhub', sim:'quizhub', pptmaker:'profile', pptresult:'profile', ai:'ai', profile:'profile'};
+  const navKey = map[screen];
+  const btn = document.querySelector(`.navbtn[data-nav="${navKey}"]`);
+  if(btn) btn.classList.add('active');
+  document.getElementById('screens').scrollTop = 0;
+  renderScreen(screen);
+}
+
+document.querySelectorAll('.navbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=> go(btn.dataset.nav));
+});
+
+/* ============ RENDER: VITALS HEADER ============ */
+function renderVitals(){
+  document.getElementById('hdrLevel').textContent = `Lv ${STATE.level}`;
+  document.getElementById('hdrStreak').textContent = `${STATE.streak}🔥`;
+  const pct = Math.min(100, Math.round(STATE.xp / xpForLevel(STATE.level) * 100));
+  document.getElementById('xpbarFill').style.width = pct+'%';
+}
+
+/* ============ RENDER: HOME ============ */
+function renderHome(){
+  const el = document.getElementById('screen-home');
+  let html = `<h1 class="serif" style="margin:0 0 4px;font-size:22px;">Good shift, nurse.</h1>
+  <p class="hero-line">Five subjects. One exam season. Let's chart your progress.</p>`;
+
+  if(STATE.lastTopic){
+    html += `<div class="continue-card" onclick="resumeLastTopic()">
+      <div><div class="cc-label">Continue studying — ${escapeHtml(SUBJECT_META[STATE.lastTopic.subject].short)}</div>
+      <div class="cc-topic">${escapeHtml(truncate(STATE.lastTopic.topic,48))}</div></div>
+      <div class="cc-arrow">›</div>
+    </div>`;
+  }
+
+  html += `<div class="section-title">Your subjects</div><div class="subject-grid">`;
+  SUBJECTS.forEach(subj=>{
+    const meta = SUBJECT_META[subj];
+    const p = subjectProgress(subj);
+    html += `<div class="subject-card" onclick="openSubject('${escapeAttr(subj)}')">
+      <div>
+        <div class="ring">${meta.icon}</div>
+        <div class="sname">${escapeHtml(meta.short)}</div>
+        <div class="smeta">${p.done}/${p.total} topics</div>
+      </div>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${p.pct}%;background:${meta.color}"></div></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  const totalTopics = SUBJECTS.reduce((s,k)=>s+SYLLABUS[k].length,0);
+  const totalDone = SUBJECTS.reduce((s,k)=>s+subjectProgress(k).done,0);
+  html += `<div class="section-title">Quick actions</div>
+  <div class="btn-row" style="margin-bottom:8px;">
+    <button class="btn" onclick="startRandomQuiz()">⚡ Surprise quiz</button>
+    <button class="btn secondary" onclick="go('ai')">💬 Ask AI</button>
+  </div>
+  <button class="btn secondary" style="margin-bottom:10px;" onclick="goToExamSheets()">📄 Exam sheets — upload a paper or topic list</button>
+  <button class="btn secondary" style="margin-bottom:10px;" onclick="go('simhub')">🏥 Clinical Simulation — OT & emergency scenarios</button>
+  <button class="btn secondary" style="margin-bottom:10px;" onclick="go('pptmaker')">🖥 Presentation Maker — build a slide deck</button>
+  <p class="hero-line" style="margin-top:14px;">Overall: ${totalDone} of ${totalTopics} topics marked studied across all subjects.</p>`;
+
+  el.innerHTML = html;
+}
+function resumeLastTopic(){
+  if(!STATE.lastTopic) return;
+  openTopicDetail(STATE.lastTopic.subject, STATE.lastTopic.idx);
+}
+function goToExamSheets(){ STUDY_TAB = 'examsheets'; go('study'); }
+function startRandomQuiz(){
+  const subj = SUBJECTS[Math.floor(Math.random()*SUBJECTS.length)];
+  beginQuiz(subj);
+}
+
+/* ============ RENDER: STUDY (subject list) ============ */
+let STUDY_TAB = 'syllabus';
+function setStudyTab(t){ STUDY_TAB = t; renderStudy(); }
+function renderStudy(){
+  const el = document.getElementById('screen-study');
+  let html = `<h2 class="serif" style="margin:0 0 4px;font-size:20px;">Study</h2>
+  <div class="tabbar">
+    <button class="tabbtn ${STUDY_TAB==='syllabus'?'active':''}" onclick="setStudyTab('syllabus')">Syllabus</button>
+    <button class="tabbtn ${STUDY_TAB==='examsheets'?'active':''}" onclick="setStudyTab('examsheets')">Exam Sheets</button>
+  </div>`;
+  if(STUDY_TAB === 'examsheets'){ el.innerHTML = html + examSheetsInnerHTML(); return; }
+  html += `<p class="hero-line">Pick a subject to browse its full syllabus, unit by unit.</p>
+  <div class="subject-grid">`;
+  SUBJECTS.forEach(subj=>{
+    const meta = SUBJECT_META[subj];
+    const p = subjectProgress(subj);
+    const units = unitsOf(subj).length;
+    html += `<div class="subject-card" onclick="openSubject('${escapeAttr(subj)}')">
+      <div>
+        <div class="ring">${meta.icon}</div>
+        <div class="sname">${escapeHtml(meta.short)}</div>
+        <div class="smeta">${units} units · ${p.total} topics</div>
+      </div>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${p.pct}%;background:${meta.color}"></div></div>
+    </div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+}
+function unitsOf(subject){
+  const seen = [];
+  SYLLABUS[subject].forEach(t=>{ if(!seen.includes(t.unit)) seen.push(t.unit); });
+  return seen;
+}
+function openSubject(subject){
+  CURRENT_SUBJECT = subject;
+  go('topics');
+}
+
+/* ============ EXAM SHEETS ============ */
+let PENDING_EXAM_TYPE = null; // 'image' | 'topics'
+function examSheetsInnerHTML(){
+  let html = `<div class="upload-card">
+    <h3>📄 New exam sheet</h3>
+    <p>Upload a photo of an exam paper and I'll answer each question, or upload/paste a topic list and I'll generate full answers with diagrams for each topic.</p>
+    <div class="upload-choice-row">
+      <div class="upload-choice" onclick="document.getElementById('examImageInput').click()"><span class="uic">📷</span>Photo of exam paper</div>
+      <div class="upload-choice" onclick="document.getElementById('examFileInput').click()"><span class="uic">📊</span>Excel / CSV topic list</div>
+      <div class="upload-choice" onclick="togglePasteBox()"><span class="uic">✏️</span>Paste topics</div>
+    </div>
+    <div id="pasteBoxWrap" style="display:none; margin-top:12px;">
+      <textarea class="field-input" id="pasteTopics" placeholder="One topic per line..."></textarea>
+      <button class="btn" style="margin-top:8px;" onclick="submitPastedTopics()">Generate answers</button>
+    </div>
+    <div id="uploadStatus" style="margin-top:10px; font-size:12.5px; color:var(--text-muted);"></div>
+  </div>`;
+
+  if(STATE.examSheets.length === 0){
+    html += `<div class="empty-state">No exam sheets yet. Upload one above to get started.</div>`;
+  } else {
+    html += `<div class="section-title">Your exam sheets</div>`;
+    STATE.examSheets.slice().reverse().forEach(sheet=>{
+      html += `<div class="sheet-card" onclick="openExamSheet('${sheet.id}')">
+        <div class="sc-name">${sheet.type==='image'?'📷':'📊'} ${escapeHtml(sheet.name)}</div>
+        <div class="sc-meta">${sheet.items.length} question${sheet.items.length!==1?'s':''} · ${new Date(sheet.createdAt).toLocaleDateString()}</div>
+      </div>`;
+    });
+  }
+  return html;
+}
+function togglePasteBox(){
+  const el = document.getElementById('pasteBoxWrap');
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+function setUploadStatus(msg){
+  const el = document.getElementById('uploadStatus');
+  if(el) el.innerHTML = msg;
+}
+
+function onExamImagesSelected(fileList){
+  if(!fileList.length) return;
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  const files = Array.from(fileList).slice(0,6); // cap pages
+  setUploadStatus(`<span class="spinner"></span> Reading ${files.length} page(s) and extracting questions...`);
+  Promise.all(files.map(fileToBase64)).then(async (b64s)=>{
+    try{
+      const items = await extractExamFromImages(b64s.map((d,i)=>({data:d, mime:files[i].type||'image/jpeg'})));
+      saveExamSheet('Exam paper — '+new Date().toLocaleDateString(), 'image', items);
+      setUploadStatus('Done! Opening your answers...');
+    }catch(err){
+      setUploadStatus('Error: '+err.message);
+    }
+  });
+}
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(r.result.split(',')[1]);
+    r.onerror = ()=> reject(new Error('Could not read file'));
+    r.readAsDataURL(file);
+  });
+}
+async function extractExamFromImages(images){
+  const promptText = `You are a nursing faculty tutor. These image(s) show a scanned or photographed nursing exam question paper (may span multiple pages/images). Extract every distinct question you can read, and for each one write a complete, exam-ready answer for a B.Sc. Nursing student — keep full prose, do not shorten or summarize, include genuine clinical content.\n\nRespond ONLY with strict JSON, no markdown fences, in this exact shape:\n{"items":[{"question":"...","answer":"...","diagram":["step 1","step 2","step 3"]}]}\nThe "diagram" field is a short ordered list (3-6 items) of key steps/points suitable for a simple flowchart — omit it (empty array) if the question doesn't suit a stepwise diagram.`;
+  const parts = [{text: promptText}];
+  images.forEach(img=> parts.push({inlineData:{mimeType: img.mime, data: img.data}}));
+  const raw = await callAIParts(parts);
+  const clean = raw.replace(/```json|```/g,'').trim();
+  const parsed = JSON.parse(clean);
+  return parsed.items || [];
+}
+
+function onExamFileSelected(fileList){
+  const file = fileList[0];
+  if(!file) return;
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  setUploadStatus(`<span class="spinner"></span> Reading ${escapeHtml(file.name)}...`);
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    try{
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      const topics = extractTopicColumn(rows);
+      if(!topics.length){ setUploadStatus('Could not find a topic column in that file.'); return; }
+      await runTopicListGeneration(topics, file.name);
+    }catch(err){
+      setUploadStatus('Error: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function extractTopicColumn(rows){
+  if(!rows.length) return [];
+  const body = rows.slice(1);
+  const numCols = Math.max(...rows.map(r=>r.length));
+  let bestCol = 0, bestAvg = -1;
+  for(let c=0;c<numCols;c++){
+    const vals = body.map(r=>r[c]).filter(v=>typeof v==='string');
+    if(!vals.length) continue;
+    const avg = vals.reduce((s,v)=>s+v.length,0)/vals.length;
+    if(avg > bestAvg){ bestAvg = avg; bestCol = c; }
+  }
+  return body.map(r=>r[bestCol]).filter(v=>typeof v==='string' && v.trim().length>3);
+}
+function submitPastedTopics(){
+  const text = document.getElementById('pasteTopics').value;
+  const topics = text.split('\n').map(t=>t.trim()).filter(Boolean);
+  if(!topics.length) return;
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  runTopicListGeneration(topics, 'Pasted topics — '+new Date().toLocaleDateString());
+}
+async function runTopicListGeneration(topics, name){
+  setUploadStatus(`<span class="spinner"></span> Generating answers for ${topics.length} topic(s)...`);
+  const chunks = [];
+  for(let i=0;i<topics.length;i+=8) chunks.push(topics.slice(i,i+8));
+  let allItems = [];
+  try{
+    for(let i=0;i<chunks.length;i++){
+      setUploadStatus(`<span class="spinner"></span> Generating batch ${i+1} of ${chunks.length}...`);
+      const items = await generateAnswersForTopics(chunks[i]);
+      allItems = allItems.concat(items);
+    }
+    saveExamSheet(name, 'topics', allItems);
+    setUploadStatus('Done! Opening your answers...');
+  }catch(err){
+    setUploadStatus('Error: '+err.message+ (allItems.length? ` (saved ${allItems.length} so far)`:''));
+    if(allItems.length) saveExamSheet(name, 'topics', allItems);
+  }
+}
+async function generateAnswersForTopics(topics){
+  const prompt = `You are a nursing faculty tutor writing model answers for B.Sc. Nursing exam preparation. For EACH topic below, write a complete, full-prose, exam-ready answer (do not shorten or use placeholders — genuine clinical/subject content only).\n\nTopics:\n${topics.map((t,i)=>`${i+1}. ${t}`).join('\n')}\n\nRespond ONLY with strict JSON, no markdown fences, in this exact shape:\n{"items":[{"question":"<the topic as given>","answer":"...","diagram":["step 1","step 2","step 3"]}]}\nInclude one object per topic, in the same order. "diagram" is a short ordered list (3-6 items) of key steps/points for a simple flowchart — use an empty array if not applicable.`;
+  const raw = await callAI(prompt);
+  const clean = raw.replace(/```json|```/g,'').trim();
+  const parsed = JSON.parse(clean);
+  return parsed.items || [];
+}
+function saveExamSheet(name, type, items){
+  const sheet = { id:'sheet_'+Date.now(), name, type, createdAt:Date.now(), items };
+  STATE.examSheets.push(sheet);
+  addXP(items.length*3);
+  saveState();
+  if(document.getElementById('screen-study').classList.contains('active')) renderStudy();
+  openExamSheet(sheet.id);
+}
+let CURRENT_SHEET_ID = null;
+function openExamSheet(id){
+  CURRENT_SHEET_ID = id;
+  go('examsheetdetail');
+}
+function renderExamSheetDetail(){
+  const el = document.getElementById('screen-examsheetdetail');
+  const sheet = STATE.examSheets.find(s=>s.id===CURRENT_SHEET_ID);
+  if(!sheet){ el.innerHTML = `<div class="empty-state">Sheet not found.</div>`; return; }
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('study')">‹</button>
+    <div><h2 style="font-size:15px;">${sheet.type==='image'?'📷':'📊'} ${escapeHtml(sheet.name)}</h2><div class="sub">${sheet.items.length} answered</div></div>
+  </div>`;
+  sheet.items.forEach(item=>{
+    html += `<div class="qa-card">
+      <div class="qa-q">${escapeHtml(item.question || item.topic || '')}</div>
+      <div class="qa-a">${escapeHtml(item.answer||'')}</div>
+      ${renderFlowchart(item.diagram)}
+    </div>`;
+  });
+  html += `<button class="btn secondary" onclick="deleteExamSheet('${sheet.id}')">🗑 Delete this sheet</button>`;
+  el.innerHTML = html;
+}
+function deleteExamSheet(id){
+  STATE.examSheets = STATE.examSheets.filter(s=>s.id!==id);
+  saveState();
+  go('study');
+  STUDY_TAB = 'examsheets';
+  renderStudy();
+}
+function renderFlowchart(steps){
+  if(!steps || !steps.length) return '';
+  let html = `<div class="flowchart">`;
+  steps.forEach((s,i)=>{
+    html += `<div class="flow-box">${escapeHtml(s)}</div>`;
+    if(i < steps.length-1) html += `<div class="flow-arrow">↓</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+const GEMINI_FALLBACK_MODELS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash'];
+let _geminiModelCache = { key:'', list:null };
+function resetGeminiModels(){ _geminiModelCache = { key:'', list:null }; }
+// Ask Google which models THIS key can use, then rank them (newest flash first).
+async function getGeminiModels(key){
+  if(_geminiModelCache.key === key && _geminiModelCache.list) return _geminiModelCache.list;
+  try{
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
+      headers:{ 'x-goog-api-key': key }
+    });
+    if(!res.ok) throw new Error('list failed ' + res.status);
+    const data = await res.json();
+    const bad = /image|tts|live|audio|embedding|aqa|imagen|robotics|computer-use|learnlm|veo|gemma/i;
+    const ok = (data.models||[])
+      .filter(m=> (m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=> m.name.replace(/^models\//,''))
+      .filter(n=> /^gemini-/.test(n) && !bad.test(n));
+    const ver = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[0,0])[1]);
+    const tier = n => /flash-lite/.test(n) ? 1 : /flash/.test(n) ? 0 : 2; // flash, then lite, then pro
+    ok.sort((a,b)=> tier(a)-tier(b) || ver(b)-ver(a) || (/preview|exp/.test(a)?1:0)-(/preview|exp/.test(b)?1:0));
+    const list = ok.slice(0,4);
+    if(list.length){ _geminiModelCache = { key, list }; return list; }
+  }catch(e){}
+  return GEMINI_FALLBACK_MODELS;
+}
+const sleepMs = ms => new Promise(r=>setTimeout(r,ms));
+async function callGemini(parts){
+  const key = (STATE.apiKey || '').trim();
+  if(!key) throw new Error('No API key set. Add one in Profile.');
+  let lastErr = null;
+  const GEMINI_MODELS = await getGeminiModels(key);
+  // Try each model; on 503/500 (overloaded) retry once, then fall back to the next model.
+  for(const model of GEMINI_MODELS){
+    for(let attempt=0; attempt<2; attempt++){
+      let res;
+      try{
+        res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({ contents:[{ parts }] })
+        });
+      }catch(e){
+        throw new Error('Could not reach Gemini. Check your internet and open this app from your phone browser (not inside the Claude preview).');
+      }
+      const raw = await res.text();
+      let data = {};
+      try { data = raw ? JSON.parse(raw) : {}; } catch(e) {}
+
+      if(res.ok){
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(!text) throw new Error(data?.promptFeedback?.blockReason
+          ? 'Gemini blocked the request: ' + data.promptFeedback.blockReason
+          : 'Gemini returned no text response.');
+        STATE.lastModel = model;
+        return text.trim();
+      }
+
+      const apiMsg = data?.error?.message || raw || 'Unknown API error';
+      if(res.status === 400) throw new Error('Invalid request: ' + apiMsg);
+      if(res.status === 401 || res.status === 403) throw new Error('API key rejected. Check that the key is a Gemini API key and that the Gemini API is enabled. Details: ' + apiMsg);
+      if(res.status === 404){ lastErr = new Error('Gemini model ' + model + ' not found. Details: ' + apiMsg); break; } // try next model
+      if(res.status === 429) throw new Error('Gemini rate limit/quota reached. Try again later. Details: ' + apiMsg);
+      lastErr = new Error('Gemini API error ('+res.status+'): ' + apiMsg);
+      if(attempt === 0) await sleepMs(1500); // brief wait, then retry same model
+    }
+  }
+  throw lastErr || new Error('Gemini request failed.');
+}
+async function callAIParts(parts){
+  return callGemini(parts);
+}
+
+/* ============ RENDER: TOPICS (units + topic rows) ============ */
+function renderTopics(){
+  const el = document.getElementById('screen-topics');
+  const subject = CURRENT_SUBJECT;
+  const meta = SUBJECT_META[subject];
+  const p = subjectProgress(subject);
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('study')">‹</button>
+    <div><h2>${meta.icon} ${escapeHtml(meta.short)}</h2><div class="sub">${p.done}/${p.total} topics studied</div></div>
+  </div>`;
+
+  const units = unitsOf(subject);
+  units.forEach(unit=>{
+    html += `<div class="unit-block"><div class="unit-head">UNIT ${escapeHtml(unit)}</div>`;
+    SYLLABUS[subject].forEach((t, idx)=>{
+      if(t.unit !== unit) return;
+      const done = STATE.completed[subject] && STATE.completed[subject][idx];
+      html += `<div class="topic-row ${done?'done':''}" onclick="openTopicDetail('${escapeAttr(subject)}', ${idx})">
+        <div class="tcheck">${done?'✓':''}</div>
+        <div class="ttext">${escapeHtml(t.topic)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+/* ============ RENDER: TOPIC DETAIL (AI explain on demand) ============ */
+let TOPIC_EXPLAIN_CACHE = {};
+function openTopicDetail(subject, idx){
+  CURRENT_SUBJECT = subject;
+  const topic = SYLLABUS[subject][idx];
+  STATE.lastTopic = { subject, idx, topic: topic.topic };
+  saveState();
+  window._currentTopicIdx = idx;
+  go('topicdetail');
+}
+function renderTopicDetail(){
+  const subject = CURRENT_SUBJECT;
+  const idx = window._currentTopicIdx;
+  const topic = SYLLABUS[subject][idx];
+  const meta = SUBJECT_META[subject];
+  const done = STATE.completed[subject] && STATE.completed[subject][idx];
+  const cacheKey = subject+'|'+idx;
+  const cached = TOPIC_EXPLAIN_CACHE[cacheKey];
+
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('topics')">‹</button>
+    <div><h2 style="font-size:15px;">${meta.icon} ${escapeHtml(meta.short)}</h2><div class="sub">Unit ${escapeHtml(topic.unit)}</div></div>
+  </div>
+  <div class="topic-detail-card">
+    <div class="unit-tag">UNIT ${escapeHtml(topic.unit)}</div>
+    <h3>${escapeHtml(topic.topic)}</h3>`;
+
+  if(cached){
+    html += `<div class="explain-box">${escapeHtml(cached)}</div>`;
+  } else {
+    html += `<div class="explain-placeholder" id="explainPlaceholder">Tap "Explain this topic" and your AI assistant will break it down — definitions, key points, and a quick diagram in words.</div>`;
+  }
+
+  html += `<div class="btn-row" style="margin-top:14px;">
+      <button class="btn secondary" id="explainBtn" onclick="explainTopic()">${cached?'🔄 Re-explain':'✨ Explain this topic'}</button>
+      <button class="btn" onclick="markDoneAndBack()">${done?'✓ Studied':'Mark as studied'}</button>
+    </div>
+  </div>`;
+  document.getElementById('screen-topicdetail').innerHTML = html;
+}
+function markDoneAndBack(){
+  markTopicDone(CURRENT_SUBJECT, window._currentTopicIdx);
+  renderTopicDetail();
+  showToast('+5 XP — nice work');
+}
+async function explainTopic(){
+  const subject = CURRENT_SUBJECT;
+  const idx = window._currentTopicIdx;
+  const topic = SYLLABUS[subject][idx];
+  const btn = document.getElementById('explainBtn');
+  const placeholder = document.getElementById('explainPlaceholder');
+  if(!STATE.apiKey){
+    showApiKeyPrompt();
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Thinking...`;
+  if(placeholder) placeholder.textContent = "Generating explanation...";
+  try{
+    const prompt = `You are a nursing faculty tutor. Explain this B.Sc. Nursing syllabus topic clearly for exam preparation.\nSubject: ${subject}\nUnit: ${topic.unit}\nTopic: "${topic.topic}"\n\nGive: (1) a short definition/overview, (2) key clinical points as bullet points, (3) a one-line Roman Urdu summary at the end labeled "Khulasa:". Keep it focused and exam-relevant, under 220 words. Do not use markdown headers, just plain text with line breaks and bullets using "-".`;
+    const text = await callAI(prompt);
+    TOPIC_EXPLAIN_CACHE[subject+'|'+idx] = text;
+    renderTopicDetail();
+  }catch(err){
+    showToast('AI error: '+err.message);
+    btn.disabled = false;
+    btn.innerHTML = '✨ Explain this topic';
+  }
+}
+
+/* ============ QUIZ HUB ============ */
+function renderQuizHub(){
+  const el = document.getElementById('screen-quizhub');
+  let html = `<h2 class="serif" style="margin:0 0 4px;font-size:20px;">Quiz</h2>
+  <p class="hero-line">Fresh questions every time — a seed bank plus AI-generated questions pulled from your syllabus topics.</p>
+  <div class="subject-grid">`;
+  SUBJECTS.forEach(subj=>{
+    const meta = SUBJECT_META[subj];
+    html += `<div class="subject-card" onclick="beginQuiz('${escapeAttr(subj)}')">
+      <div>
+        <div class="ring">${meta.icon}</div>
+        <div class="sname">${escapeHtml(meta.short)}</div>
+        <div class="smeta">10 questions</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>
+  <div class="section-title">Or</div>
+  <button class="btn secondary" onclick="startRandomQuiz()">🎲 Mixed quiz — random subject</button>
+  <div class="section-title">Hands-on practice</div>
+  <div class="sim-scenario-card" onclick="go('simhub')">
+    <div class="ssc-icon">🏥</div>
+    <div><div class="ssc-title">Clinical Simulation (OT & emergency scenarios)</div><div class="ssc-sub">Make real-time decisions in 4 interactive scenarios</div></div>
+  </div>`;
+  el.innerHTML = html;
+}
+
+/* ============ QUIZ SESSION ============ */
+let QUIZ = null; // {subject, questions:[], i, correct}
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function buildQuizQuestions(subject, count){
+  const seed = shuffle(QUIZ_BANK[subject] || []).slice(0, Math.min(count, (QUIZ_BANK[subject]||[]).length));
+  return seed.map(q=>({ ...q, source:'seed' }));
+}
+async function beginQuiz(subject){
+  CURRENT_SUBJECT = subject;
+  const questions = buildQuizQuestions(subject, 5);
+  QUIZ = { subject, questions, i:0, correct:0, answered:false };
+  go('quiz');
+  // Try to append 2 freshly AI-generated questions in the background if a key is set, for variety
+  if(STATE.apiKey){
+    generateAIQuestion(subject).then(q=>{ if(q && QUIZ && QUIZ.subject===subject) QUIZ.questions.push(q); }).catch(()=>{});
+  }
+}
+async function generateAIQuestion(subject){
+  const topics = SYLLABUS[subject];
+  const pick = topics[Math.floor(Math.random()*topics.length)];
+  const prompt = `Create ONE multiple-choice nursing exam question for B.Sc. Nursing students on this exact syllabus topic.\nSubject: ${subject}\nUnit: ${pick.unit}\nTopic: "${pick.topic}"\n\nRespond ONLY with strict JSON, no markdown, no code fences, in this exact shape:\n{"q":"question text","opts":["A","B","C","D"],"a":0,"ex":"one sentence explanation of the correct answer"}\nThe "a" field is the zero-based index of the correct option.`;
+  const raw = await callAI(prompt);
+  const clean = raw.replace(/```json|```/g,'').trim();
+  const parsed = JSON.parse(clean);
+  parsed.source = 'ai';
+  return parsed;
+}
+function renderQuiz(){
+  const el = document.getElementById('screen-quiz');
+  if(!QUIZ || QUIZ.i >= QUIZ.questions.length){
+    renderQuizScore();
+    return;
+  }
+  const q = QUIZ.questions[QUIZ.i];
+  const meta = SUBJECT_META[QUIZ.subject];
+  let html = `<div class="backbar">
+    <button class="backbtn" onclick="go('quizhub')">‹</button>
+    <div><h2 style="font-size:15px;">${meta.icon} ${escapeHtml(meta.short)}</h2></div>
+  </div>
+  <div class="quiz-card">
+    <div class="quiz-progress">Question ${QUIZ.i+1} of ${QUIZ.questions.length} ${q.source==='ai'?'· ✨ AI-generated':''}</div>
+    <div class="quiz-q">${escapeHtml(q.q)}</div>
+    <div id="optsWrap">`;
+  q.opts.forEach((opt,i)=>{
+    html += `<button class="opt" onclick="answerQuiz(${i})">${escapeHtml(opt)}</button>`;
+  });
+  html += `</div><div id="quizExplainWrap"></div></div>`;
+  el.innerHTML = html;
+}
+function answerQuiz(i){
+  const q = QUIZ.questions[QUIZ.i];
+  if(QUIZ.answered) return;
+  QUIZ.answered = true;
+  const opts = document.querySelectorAll('#optsWrap .opt');
+  opts.forEach((btn,idx)=>{
+    btn.disabled = true;
+    if(idx === q.a) btn.classList.add('correct');
+    else if(idx === i) btn.classList.add('wrong');
+  });
+  const correct = (i === q.a);
+  if(correct){ QUIZ.correct++; addXP(10); } else { addXP(2); }
+  STATE.quizStats.taken++;
+  if(correct) STATE.quizStats.correct++;
+  checkBadges();
+  saveState();
+  document.getElementById('quizExplainWrap').innerHTML = `<div class="quiz-explain">${correct? '✅ Correct. ':'❌ Not quite. '}${escapeHtml(q.ex||'')}</div>
+  <button class="btn" style="margin-top:12px;" onclick="nextQuizQuestion()">${QUIZ.i+1<QUIZ.questions.length? 'Next question':'See results'}</button>`;
+}
+function nextQuizQuestion(){
+  QUIZ.i++;
+  QUIZ.answered = false;
+  renderQuiz();
+}
+function renderQuizScore(){
+  const el = document.getElementById('screen-quiz');
+  const total = QUIZ.questions.length;
+  const pct = total? Math.round(QUIZ.correct/total*100) : 0;
+  el.innerHTML = `<div class="quiz-card quiz-score">
+    <div style="font-size:13px;color:var(--text-muted);">Quiz complete</div>
+    <div class="big">${QUIZ.correct}/${total}</div>
+    <div style="color:var(--text-muted);font-size:13px;margin-bottom:18px;">${pct}% correct</div>
+    <div class="btn-row">
+      <button class="btn secondary" onclick="go('quizhub')">Back to Quiz</button>
+      <button class="btn" onclick="beginQuiz('${escapeAttr(QUIZ.subject)}')">Try again</button>
+    </div>
+  </div>`;
+}
+
+/* ============ AI CHAT ============ */
+function renderAI(){
+  const el = document.getElementById('screen-ai');
+  let html = `<h2 class="serif" style="margin:0 0 4px;font-size:20px;">AI Assistant</h2>
+  <p class="hero-line" style="margin-bottom:10px;">Ask anything from your syllabus — case scenarios, drug doses, exam-style Q&A.</p>
+  <div class="chat-wrap" style="height:calc(100vh - 320px);">
+  <div class="chip-row">
+    <div class="chip" onclick="askQuick('Explain the difference between cyanotic and acyanotic congenital heart disease')">CHD types</div>
+    <div class="chip" onclick="askQuick('Give me 3 nursing priorities for a patient in delirium tremens')">DTs priorities</div>
+    <div class="chip" onclick="askQuick('Explain the stages of labour briefly')">Stages of labour</div>
+    <div class="chip" onclick="askQuick('What is the difference between validity and reliability in research?')">Validity vs reliability</div>
+  </div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask your AI assistant..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()">➤</button>
+  </div>
+  </div>`;
+  el.innerHTML = html;
+  renderChatLog();
+}
+function renderChatLog(){
+  const log = document.getElementById('chatLog');
+  if(!log) return;
+  log.innerHTML = STATE.chatHistory.map(m=>`<div class="msg ${m.role}">${escapeHtml(m.text)}</div>`).join('');
+  log.scrollTop = log.scrollHeight;
+}
+function askQuick(text){
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!STATE.apiKey){ showApiKeyPrompt(); return; }
+  input.value = '';
+  STATE.chatHistory.push({role:'user', text});
+  saveState();
+  renderChatLog();
+  STATE.chatHistory.push({role:'ai', text:'…'});
+  renderChatLog();
+  try{
+    const prompt = `You are a friendly, precise nursing tutor helping a B.Sc. Nursing student (subjects: Child Health, Mental Health, Community Health, Nursing Research & Statistics, OBG Nursing). Answer clearly and concisely for exam prep.\n\nStudent question: ${text}`;
+    const reply = await callAI(prompt);
+    STATE.chatHistory[STATE.chatHistory.length-1] = {role:'ai', text:reply};
+  }catch(err){
+    STATE.chatHistory[STATE.chatHistory.length-1] = {role:'ai', text:'Error: '+err.message};
+  }
+  saveState();
+  renderChatLog();
+}
+
+/* ============ AI CALL (Gemini) ============ */
+async function callAI(prompt){
+  return callGemini([{text:prompt}]);
+}
+function showApiKeyPrompt(){
+  showToast('Add a free Gemini API key in Profile → Settings first');
+  go('profile');
+}
+
+/* ============ PROFILE ============ */
+function renderProfile(){
+  const el = document.getElementById('screen-profile');
+  const totalDone = SUBJECTS.reduce((s,k)=>s+subjectProgress(k).done,0);
+  const acc = STATE.quizStats.taken? Math.round(STATE.quizStats.correct/STATE.quizStats.taken*100):0;
+  const badgeDefs = [
+    {id:'first_quiz', ic:'🎯', label:'First Quiz'},
+    {id:'quiz_10', ic:'🏹', label:'10 Quizzes'},
+    {id:'streak_3', ic:'🔥', label:'3-Day Streak'},
+    {id:'streak_7', ic:'⚡', label:'7-Day Streak'},
+    {id:'level_5', ic:'🎖️', label:'Level 5'},
+    {id:'topics_20', ic:'📘', label:'20 Topics'},
+    {id:'topics_100', ic:'📚', label:'100 Topics'},
+  ];
+  let html = `<h2 class="serif" style="margin:0 0 14px;font-size:20px;">Your Progress</h2>
+  <div class="section-title" style="margin-top:0;">Tools</div>
+  <div class="btn-row" style="margin-bottom:16px;">
+    <button class="btn secondary" onclick="go('pptmaker')">🖥 Presentation Maker</button>
+    <button class="btn secondary" onclick="goToExamSheets()">📄 Exam Sheets</button>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="num">${STATE.level}</div><div class="lbl">LEVEL</div></div>
+    <div class="stat-box"><div class="num">${STATE.streak}</div><div class="lbl">DAY STREAK</div></div>
+    <div class="stat-box"><div class="num">${totalDone}</div><div class="lbl">TOPICS DONE</div></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="num">${STATE.quizStats.taken}</div><div class="lbl">QUIZZES</div></div>
+    <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">ACCURACY</div></div>
+    <div class="stat-box"><div class="num">${STATE.xp}</div><div class="lbl">XP (this lvl)</div></div>
+  </div>
+
+  <div class="section-title">Badges</div>
+  <div class="badge-row">
+  ${badgeDefs.map(b=>`<div class="badge ${STATE.badges[b.id]?'':'locked'}"><div class="bic">${b.ic}</div>${b.label}</div>`).join('')}
+  </div>
+
+  <div class="section-title">Theme</div>
+  <div class="theme-row">
+    ${Object.keys(THEMES).map(t=>`<div class="theme-swatch ${STATE.theme===t?'active':''}" style="background:${THEMES[t].amber}" onclick="setTheme('${t}')"></div>`).join('')}
+  </div>
+
+  <div class="section-title">AI Assistant Settings</div>
+  <div class="field-label">Gemini API key (free — from aistudio.google.com/apikey). Stored only on this device.</div>
+  <input class="field-input" id="apiKeyInput" type="password" placeholder="Paste your API key" value="${escapeAttr(STATE.apiKey)}">
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn" onclick="saveApiKey()">Save key</button>
+    <button class="btn secondary" onclick="testApiKey()">Test key</button>
+  </div>
+  <div id="apiKeyStatus" style="margin-top:10px;font-size:12px;line-height:1.45;color:var(--text-muted);"></div>
+  <p class="hero-line" style="margin-top:20px;">Without a key, study topics and quizzes still work fully from the built-in question bank — only AI explanations and chat need a key.</p>
+  `;
+  el.innerHTML = html;
+}
+function setTheme(t){ STATE.theme = t; saveState(); applyTheme(); renderProfile(); }
+function saveApiKey(){
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if(!key){
+    showToast('Please paste a Gemini API key first');
+    return;
+  }
+  STATE.apiKey = key;
+  resetGeminiModels();
+  saveState();
+  showToast('API key saved — tap Test key to verify it');
+}
+
+async function testApiKey(){
+  const input = document.getElementById('apiKeyInput');
+  const status = document.getElementById('apiKeyStatus');
+  const key = (input?.value || '').trim();
+
+  if(!key){
+    if(status) status.textContent = 'Paste your Gemini API key first.';
+    return;
+  }
+
+  STATE.apiKey = key;
+  resetGeminiModels();
+  saveState();
+  if(status) status.innerHTML = '<span class="spinner"></span> Testing Gemini connection...';
+
+  try{
+    const reply = await callAI('Reply with exactly: NurseQuest API connection OK');
+    if(status) status.textContent = '✅ API key works. Using model: ' + (STATE.lastModel || 'Gemini');
+    showToast('Gemini API connected successfully');
+  }catch(err){
+    if(status) status.textContent = '❌ ' + err.message;
+    showToast('Gemini connection failed');
+  }
+}
+
+/* ============ SCREEN ROUTER ============ */
+function renderScreen(screen){
+  if(screen==='home') renderHome();
+  if(screen==='study') renderStudy();
+  if(screen==='topics') renderTopics();
+  if(screen==='topicdetail') renderTopicDetail();
+  if(screen==='examsheetdetail') renderExamSheetDetail();
+  if(screen==='quizhub') renderQuizHub();
+  if(screen==='quiz') renderQuiz();
+  if(screen==='simhub') renderSimHub();
+  if(screen==='sim') renderSim();
+  if(screen==='pptmaker') renderPptMaker();
+  if(screen==='pptresult') renderPptResult();
+  if(screen==='ai') renderAI();
+  if(screen==='profile') renderProfile();
+}
+
+/* ============ HELPERS ============ */
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+function truncate(s,n){ return s.length>n? s.slice(0,n-1)+'…' : s; }
+
+/* ============ INIT ============ */
+applyTheme();
+renderVitals();
+go('home');
+
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+</script>
+</body>
+</html>
